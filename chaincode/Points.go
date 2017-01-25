@@ -57,7 +57,6 @@ func main() {
 	}
 }
 
-
 // // ============================================================================================================================
 // // Run - Our entry point for Invocations - [LEGACY] obc-peer 4/25/2016
 // // ============================================================================================================================
@@ -67,7 +66,7 @@ func main() {
 // }
 
 // ============================================================================================================================
-// Invoke - Our entry point for  TO REMOVE SHITTTTTT
+// Invoke - Our entry point to invoke a chaincode function (eg. write, createAccount, etc)
 // ============================================================================================================================
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("invoke is running " + function)
@@ -92,7 +91,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 
-	return nil, errors.New("Received unknown function invocation")
+	return nil, errors.New("Received unknown function invocation" + function) //Return function for debug purpose
 }
 
 // ============================================================================================================================
@@ -153,7 +152,7 @@ func (t *SimpleChaincode) CreateAccount(stub shim.ChaincodeStubInterface, args [
   // Obtain the username to associate with the account
   var username string
   var err error
- 	fmt.Println("running write()")
+ 	fmt.Println("running CreateAccount()")
 
   if len(args) != 2 {
      fmt.Println("Error obtaining username")
@@ -162,7 +161,7 @@ func (t *SimpleChaincode) CreateAccount(stub shim.ChaincodeStubInterface, args [
   username = args[0]
   password := args[1]
 
-  var account = Account{ID: username, Password: password, GiveBalance: 500, PointsBalance:50}
+  var account = Account{ID: username, Password: password, GiveBalance: 500, PointsBalance: 50}
   accountBytes, err := json.Marshal(&account)
 
   err = stub.PutState(username, accountBytes)
@@ -174,10 +173,10 @@ func (t *SimpleChaincode) CreateAccount(stub shim.ChaincodeStubInterface, args [
 
 func (t *SimpleChaincode) CreateProduct(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
   var err error
- 	fmt.Println("running write()")
+ 	fmt.Println("running CreateProduct()")
 
   if len(args) != 3 {
-     return nil, errors.New("CreateProduct accepts a 3 argument")
+     return nil, errors.New("CreateProduct accepts 3 argument")
   }
   ID := args[0]
   name := args[1]
@@ -199,7 +198,7 @@ func (t *SimpleChaincode) CreateProduct(stub shim.ChaincodeStubInterface, args [
 
 func (t *SimpleChaincode) PurchaseProduct(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
   var err error
- 	fmt.Println("running write()")
+ 	fmt.Println("running PurchaseProduct()")
 
   if len(args) != 2 {
      return nil, errors.New("createAccount 2 argument")
@@ -281,6 +280,7 @@ func (t *SimpleChaincode) AddAllowance(stub shim.ChaincodeStubInterface, args []
 	return nil, nil
 }
 
+//Redeem points (Exchane)
 func (t *SimpleChaincode) Exchange(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
   var toRes Account
@@ -334,13 +334,16 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 
 	fromAccountAsBytes, err := stub.GetState(args[0])
 	if err != nil {
-		return nil, errors.New("Failed to get thing")
+		return nil, errors.New("Failed to get Sender")
 	}
   toAccountAsBytes, err := stub.GetState(args[2])
 	if err != nil {
-		return nil, errors.New("Failed to get thing")
+		return nil, errors.New("Failed to get Receiver")
 	}
 
+  if ( fromAccountAsBytes == toAccountAsBytes) {
+    return nil, errors.New("Failed to make Transaction - Sender must be different than Receiver")
+}
 
 	fromRes := Account{}
 	json.Unmarshal(fromAccountAsBytes, &fromRes)										//un stringify it aka JSON.parse()
@@ -355,11 +358,14 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 
   transferAmount, err := strconv.Atoi(args[1])
    if err != nil {
+      //Error because the amount entered is not a strNumber.
+      // DO not need this case if we can get a number pad so user cannot enter other characters
       // handle error
+      return nil, errors.new("Failed to add amount - Please enter a number")
    }
   if(accountBalance < transferAmount) {
     fmt.Println("- Insufficient funds")
-    return nil, nil
+    return nil, errors.New("Failed to make Transaction - Insufficient funds")
   }
 
   toRes.PointsBalance = toRes.PointsBalance + transferAmount
@@ -377,6 +383,6 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 		return nil, err
 	}
 
-	fmt.Println("- end set trade")
+	fmt.Println("Sucessful Transaction - end set trade")
 	return nil, nil
 }

@@ -53,11 +53,16 @@ var options = 	{
 		}
 	},
 	chaincode:{
-		zip_url: 'https://github.com/david-hong/blockchain-test/raw/master/chaincode.zip',
+		zip_url: 'https://github.com/ykcai/blockchain-example/archive/master/chaincode.zip',
 		unzip_dir: 'chaincode',													//subdirectroy name of chaincode after unzipped
-		git_url: 'http://gopkg.in/david-hong/blockchain-test.v1/chaincode',		//GO get http url
+		git_url: 'http://gopkg.in/ykcai/blockchain-example/chaincode',		//GO get http url
 	}
 }
+
+if(process.env.VCAP_SERVICES){
+	console.log('\n[!] looks like you are in bluemix, I am going to clear out the deploy_name so that it deploys new cc.\n[!] hope that is ok budddy\n');
+	options.chaincode.deployed_name = '';
+} //Taken from sample marble app from Bluemix
 
 var chaincode = null
 
@@ -83,7 +88,7 @@ ibc.load(options, function (err, cc){														//parse/load chaincode, respo
 		console.log('chaincode summary file indicates chaincode has been previously deployed')
 		check_if_deployed(null, 1)
 	}
-})
+});
 
 //loop here, check if chaincode is up and running or not
 function check_if_deployed(e, attempt){
