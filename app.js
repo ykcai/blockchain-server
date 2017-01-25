@@ -53,7 +53,7 @@ var options = 	{
 		}
 	},
 	chaincode:{
-		zip_url: 'https://github.com/ykcai/blockchain-example/archive/master.zip',
+		zip_url: 'https://github.com/ykcai/blockchain-example/archive/v1.zip',
 		unzip_dir: 'blockchain-example/chaincode',													//subdirectroy name of chaincode after unzipped
 		git_url: 'http://gopkg.in/ykcai/blockchain-example.v1/chaincode',		//GO get http url
 	}
