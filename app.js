@@ -54,7 +54,7 @@ var options = 	{
 	},
 	chaincode:{
 		zip_url: 'https://github.com/ykcai/blockchain-code/archive/v1.zip',
-		unzip_dir: 'blockchain-code/chaincode',													//subdirectroy name of chaincode after unzipped
+		unzip_dir: 'blockchain-code-1/chaincode',													//subdirectroy name of chaincode after unzipped
 		git_url: 'http://gopkg.in/ykcai/blockchain-code.v1/chaincode',		//GO get http url
 	}
 		//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
