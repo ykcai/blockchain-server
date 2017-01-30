@@ -226,8 +226,8 @@
             "username":"user_type8_4",
             "secret":"92c03da08e"
          }
-      ],
-      "cert":"https://blockchain-certs.mybluemix.net/us.blockchain.ibm.com.cert",
-      "cert_path":"/certs/peer/cert.pem"
-   }
+      ]
+   },
+   "cert":"https://blockchain-certs.mybluemix.net/us.blockchain.ibm.com.cert",
+   "cert_path":"/certs/peer/cert.pem"
 }
