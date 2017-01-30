@@ -256,9 +256,9 @@ router.post('/createAccount', function(req, res){
       if(e){
         sendErrorMsg("Error " + e, res)
       }
-      else if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-      }
+      // else if(!data){
+      //   sendErrorMsg("Error - Data not found for some reason?", res)
+      // }
       else{
         var token = UsersManager.createToken(username)
         data.token = token
