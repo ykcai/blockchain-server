@@ -33,7 +33,6 @@ module.exports.setup = function(server){
     ws.on('close', function(){
       delete clients[reqUrl]
       console.log('WEBSOCKET - closed, deleted client key ' + reqUrl);
-      setup();
     });
   });
 
@@ -49,9 +48,9 @@ module.exports.setup = function(server){
   };
 
   wss.broadcastSub = function broadcastSub(data, broadcastChannels) {	//send to subscribing connections
-    if(CONFIG.DASHBOARD_WS_KEY){
-      broadcastChannels.push(CONFIG.DASHBOARD_WS_KEY)
-    }
+    // if(CONFIG.DASHBOARD_WS_KEY){
+    //   broadcastChannels.push(CONFIG.DASHBOARD_WS_KEY)
+    // }
 
     broadcastChannels.forEach(function(key){
       if(! (key in clients)){
