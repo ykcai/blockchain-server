@@ -33,6 +33,7 @@ module.exports.setup = function(server){
     ws.on('close', function(){
       delete clients[reqUrl]
       console.log('WEBSOCKET - closed, deleted client key ' + reqUrl);
+      setup();
     });
   });
 
