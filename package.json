@@ -23,9 +23,9 @@
   "config": {
     "DATABASE": {
       "host": "us-cdbr-iron-east-04.cleardb.net",
-      "user": "bdc28691c79774",
-      "password": "3a9fb394",
-      "database": "ad_3109739360dc873"
+      "user": "bb9c55be9355d3",
+      "password": "c1d7919b",
+      "database": "ad_7965cfdb05ef18b"
     },
     "ALLOWANCE_SCHED": 604800000,
     "DASHBOARD_WS_KEY": "e5df7dd1-488e-4757-b6d6-38ebfd554a97"
