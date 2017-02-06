@@ -157,7 +157,6 @@ router.get('/user-stats', function(req, res){
     if(query){
       query = query.toLowerCase()
       var arrContains = function(arr, str){
-        var employeeName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
         var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()s
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
 
