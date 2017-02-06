@@ -10,6 +10,10 @@ module.exports.getTransactionHistory = function(username){
   })
 }
 
+module.exports.getAllTransactionHistory = function(){
+  return transactionHistory;
+}
+
 module.exports.getAllowanceHistory = function(username){
   return allowanceHistory.filter(function(o){
     return o.transaction[1] == username // received allowance

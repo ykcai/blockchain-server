@@ -127,10 +127,6 @@ router.get('/trade-history', function(req, res){
          }
         return false
       }
-
-      data = data.filter(function(o){
-        return arrContains(o.transaction, query)
-      })
     }
 
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
@@ -146,6 +142,47 @@ router.get('/trade-history', function(req, res){
     res.send({data: data})
   })
 })
+
+// Trade history - gets the trades the user did & allowances
+// headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
+// DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
+// response: JSON
+router.get('/user-stats', function(req, res){
+  UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
+
+    // Grab all history
+    var data = transactionUtil.getAllTransactionHistory();
+
+    var query = req.get("query")
+    if(query){
+      query = query.toLowerCase()
+      var arrContains = function(arr, str){
+        var employeeName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
+        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()s
+        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+
+        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
+           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str) {
+           return true
+         }
+        return false
+      }
+    }
+
+    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+    data.forEach(function(o){
+      if(o.type === "set_user"){
+        o.employeeName = UsersManager.getFullname(o.transaction[1])
+        o.re
+      }
+    })
+
+    res.status(200)
+    res.send({data: data})
+  })
+})
+
 
 // Product history - gets the products the user purchased
 // headers: username, token, startDateTime (optional), endDateTime (optional)
