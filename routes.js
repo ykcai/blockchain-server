@@ -129,7 +129,7 @@ router.get('/trade-history', function(req, res){
       }
     }
 
-    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+    data = filterByDates(data, req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
       if(o.type === "set_user"){
