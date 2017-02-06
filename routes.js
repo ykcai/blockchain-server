@@ -153,29 +153,7 @@ router.get('/user-stats', function(req, res){
     // Grab all history
     var data = transactionUtil.getAllTransactionHistory();
 
-    var query = req.get("query")
-    if(query){
-      query = query.toLowerCase()
-      var arrContains = function(arr, str){
-        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
-        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
-
-        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str) {
-           return true
-         }
-        return false
-      }
-    }
-
     data = filterByDates(data, req.get("startDateTime"), req.get("endDateTime"))
-
-    data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.employeeName = UsersManager.getFullname(o.transaction[1])
-        o.re
-      }
-    })
 
     res.status(200)
     res.send({data: data})
