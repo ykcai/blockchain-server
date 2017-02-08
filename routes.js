@@ -147,22 +147,22 @@ router.get('/trade-history', function(req, res){
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
-router.get('/user-stats', function(req, res){
+router.get('/all-trade-history', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
-    // Grab all history
+    // filter by user
     var data = transactionUtil.getAllTransactionHistory();
+    var data2 = transactionUtil.getAllAllowanceHistory();
 
     var query = req.get("query")
     if(query){
       query = query.toLowerCase()
       var arrContains = function(arr, str){
-        var employeeName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
-        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()s
+        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
 
         if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str) {
+           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
            return true
          }
         return false
@@ -173,8 +173,8 @@ router.get('/user-stats', function(req, res){
 
     data.forEach(function(o){
       if(o.type === "set_user"){
-        o.employeeName = UsersManager.getFullname(o.transaction[1])
-        o.re
+        o.sender = UsersManager.getFullname(o.transaction[1])
+        o.receiver = UsersManager.getFullname(o.transaction[3])
       }
     })
 
