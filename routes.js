@@ -70,6 +70,15 @@ var filterByDates = function(data, start, end){
   return data
 }
 
+var filterByCurrentUser = function(data, username){
+  if(start){
+    var date = new Date(start)
+    data = data.filter(function(o){
+      var d = new Date(o.timestamp.seconds*1000)
+      return d >= date
+    })
+  }
+
 module.exports.setup = function(sdk, cc){
   ibc = sdk
   chaincode = cc
@@ -128,7 +137,7 @@ router.get('/trade-history', function(req, res){
         return false
       }
     }
-
+    data = filterByCurrentUser
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
@@ -147,13 +156,36 @@ router.get('/trade-history', function(req, res){
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
-router.get('/user-stats', function(req, res){
+router.get('/all-transactions', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
-    // Grab all history
+    // filter by user
     var data = transactionUtil.getAllTransactionHistory();
+    var data2 = transactionUtil.getAllAllowanceHistory()
 
-    data = filterByDates(data, req.get("startDateTime"), req.get("endDateTime"))
+    var query = req.get("query")
+    if(query){
+      query = query.toLowerCase()
+      var arrContains = function(arr, str){
+        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
+        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+
+        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
+           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+           return true
+         }
+        return false
+      }
+    }
+
+    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+    data.forEach(function(o){
+      if(o.type === "set_user"){
+        o.sender = UsersManager.getFullname(o.transaction[1])
+        o.receiver = UsersManager.getFullname(o.transaction[3])
+      }
+    })
 
     res.status(200)
     res.send({data: data})
@@ -292,37 +324,60 @@ router.post('/createAccount', function(req, res){
 router.post('/login', function(req, res){
   var username = req.body.username
   var password = req.body.password
+  var client = req.body.client
 
-  if(!username || !password){
-    sendErrorMsg("Missing data", res)
-    return
-  }
-
-  chaincode.query.read([username], function(e, data){
-    if(e){
-      console.log(e)
-      sendErrorMsg("Blockchain error", res)
+  if (client = 'SLACK') {
+    if(!username){
+      sendErrorMsg("Missing data", res)
       return
     }
-    if(!data){
-      sendErrorMsg("Error - Data not found for some reason?", res)
-      return
-    }
-
-    var hash = JSON.parse(data).password
-
-    if(UsersManager.comparePasswords(password, hash)){
-      var token = UsersManager.createToken(username)
-
-      dbUtil.getUser(username, res, function(rows){
+    chaincode.query.read([username], function(e, data){
+      if(e){
+        console.log(e)
+        sendErrorMsg("Blockchain error", res)
+        return
+      }
+      if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+        return
+      }
+      dbUtil.getUser(username, res, function(rows) {
         res.status(200)
-        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
-      })
+        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})})
+      }
+    })
+  } else {
+    if(!username || !password){
+      sendErrorMsg("Missing data", res)
+      return
     }
-    else{
-      sendErrorMsg("Wrong password", res)
-    }
-  })
+
+    chaincode.query.read([username], function(e, data){
+      if(e){
+        console.log(e)
+        sendErrorMsg("Blockchain error", res)
+        return
+      }
+      if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+        return
+      }
+
+      var hash = JSON.parse(data).password
+
+      if(UsersManager.comparePasswords(password, hash)){
+        var token = UsersManager.createToken(username)
+
+        dbUtil.getUser(username, res, function(rows){
+          res.status(200)
+          res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+        })
+      }
+      else{
+        sendErrorMsg("Wrong password", res)
+      }
+    })
+  }
 })
 
 // headers: token

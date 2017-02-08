@@ -20,6 +20,11 @@ module.exports.getAllowanceHistory = function(username){
   })
 }
 
+module.exports.getAllAllowanceHistory = function(){
+  return allowanceHistory;
+}
+
+
 module.exports.getProductHistory = function(username){
   return productHistory.filter(function(o){
     return o.transaction.indexOf(username) != -1 // SPENT points
