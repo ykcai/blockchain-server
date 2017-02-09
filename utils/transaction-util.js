@@ -30,7 +30,7 @@ module.exports.getProductHistory = function(username){
   })
 }
 
-module.exports.getTransactionHistoryStatistics = () => {
+module.exports.getTransactionHistoryStatistics = function() {
   var myMap = new Map();
   var jsonValue = {};
   //sets sender points
