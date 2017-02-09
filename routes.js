@@ -5,13 +5,97 @@ var UUID            = require('./utils/UUID-util')
 var CONFIG          = require('./package').config
 var UsersManager    = require('./users-manager')
 var transactionUtil = require('./utils/transaction-util')
-
+var passport        = require('passport')
+var cookieParser    = require('cookie-parser');
+var session         = require('express-session');
 var ibc
 var chaincode
 
 dbUtil.getAllUsers(null, null, function(rows){
   UsersManager.setup(rows)
 })
+
+// ---- AUTHENTICATION ----- //
+
+router.use(cookieParser());
+router.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: true }));
+router.use(passport.initialize());
+router.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+   done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+   done(null, obj);
+});
+
+var ssoConfig = CONFIG.SSO;
+var client_id = ssoConfig.clientID;
+var client_secret = ssoConfig.secret;
+var authorization_url = ssoConfig.authURL;
+var token_url = ssoConfig.tokenURL;
+var issuer_id = ssoConfig.issuerID;
+var callback_url = ssoConfig.callbackURL;
+
+var OpenIDConnectStrategy = require('passport-idaas-openidconnect').IDaaSOIDCStrategy;
+var Strategy = new OpenIDConnectStrategy({
+                authorizationURL : authorization_url,
+                tokenURL : token_url,
+                clientID : client_id,
+                scope : 'email',
+                response_type : 'code',
+                clientSecret : client_secret,
+                callbackURL : callback_url,
+                skipUserProfile : true,
+                issuer : issuer_id
+              },
+      function(iss, sub, profile, accessToken, refreshToken, params, done) {
+        process.nextTick(function() {
+            profile.accessToken = accessToken;
+            profile.refreshToken = refreshToken;
+            done(null, profile);
+        })
+      }
+)
+
+passport.use(Strategy);
+
+router.get('/auth/sso/callback',function(req,res,next) {
+  passport.authenticate('openidconnect', {
+    successRedirect: '/auth/test',
+    failureRedirect: '/auth/failure',
+  })(req,res,next);
+});
+//for tesing purposes
+router.get('/auth/test',function(req,res,next){
+  res.send({check:"This Works"})
+})
+router.get('/auth/failure', function(req, res) {
+  res.send({check:"This doesn't work"})
+  //sendErrorMsg('login failed',res);
+});
+router.get('/auth/logout',function(req,res){
+  req.logout()
+  if (req.isAuthenticated()){
+    res.redirect('/auth/test')
+  }else{
+    res.redirect('/auth/failure')
+  }
+})
+//end testing
+router.get('/login', passport.authenticate('openidconnect', {}));
+
+function ensureAuthenticated(req, res, next) {
+  if(!req.isAuthenticated()) {
+    req.session.originalUrl = req.originalUrl;
+    res.redirect('/login');
+  } else {
+    return next();
+  }
+}
+
+// --- END AUTHENTICATION ---- //
 
 // Script to allocate allowance to users based on db every X seconds
 setInterval(function(){
@@ -312,7 +396,7 @@ router.post('/createAccount', function(req, res){
 
 // body: username, password
 // response: JSON
-router.post('/login', function(req, res){
+router.post('/auth/dbcheck', function(req, res){
   var username = req.body.username
   var password = req.body.password
 
@@ -361,6 +445,7 @@ router.post('/logout', function(req, res){
   }
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
+    req.logout()
     res.status(200)
     res.send({msg: "Logged out"})
   })
@@ -386,7 +471,7 @@ router.get('/product/:prodID', function(req, res){
 })
 
 // response: JSON
-router.get('/all-products', function(req, res){
+router.get('/all-products',ensureAuthenticated, function(req, res){
   var products = []
   var prodIDs = []
 
