@@ -30,24 +30,68 @@ module.exports.getProductHistory = function(username){
   })
 }
 
+module.exports.getTransactionHistoryStatistics = () => {
+  var myMap = new Map();
+  var jsonValue = {};
+  //sets sender points
+  transactionHistory.forEach(obj => {
+      if(myMap.has(obj.transaction[1])){ //already exists, incriment values
+          jsonValue = myMap.get(obj.transaction[1]);
+          jsonValue.pointsSent += parseInt(obj.transaction[2])
+
+      }else{ //create new key, add values
+          jsonValue = {
+              pointsSent: parseInt(obj.transaction[2]),
+              pointsReceived:0
+          }
+      }
+      myMap.set(obj.transaction[1], jsonValue);
+  });
+  //sets reciever points
+  transactionHistory.forEach(obj => {
+      if(myMap.has(obj.transaction[3])){ //already exists, incriment values
+          jsonValue = myMap.get(obj.transaction[3]);
+          jsonValue.pointsReceived += parseInt(obj.transaction[2])
+
+      }else{ //create new key, add values
+          //if the above for loop is ran, it shouldn't get here at all
+          console.log("oops shouldn't have gotten here !!!");
+          jsonValue = {
+              pointsSent: 0,
+              pointsReceived:parseInt(obj.transaction[2])
+
+          }
+      }
+      myMap.set(obj.transaction[3], jsonValue);
+  });
+
+  for (var [key, value] of myMap.entries()) {
+    console.log(key + ' = ' + value);
+  }
+  return myMap;
+}
+
 module.exports.addTransaction = function(transaction, callback){
   var str = atob(transaction.payload)
 
   var blockObj = {
     chaincodeID: transaction.chaincodeID,
-    timestamp: transaction.timestamp
+    timestamp: transaction.timestamp,
+    detail: transaction.transaction
   }
 
   if(str.indexOf("set_user") > -1){
     blockObj.transaction = formatPayload(str.substr(str.indexOf("set_user")))
     blockObj.type = "set_user"
     transactionHistory.push(blockObj)
+    console.log(blockObj)
     callback(blockObj)
   }
   else if(str.indexOf("addAllowance") > -1){
     blockObj.transaction = formatPayload(str.substr(str.indexOf("addAllowance")))
     blockObj.type = "addAllowance"
     allowanceHistory.push(blockObj)
+    //console.log(blockObj)
     callback(blockObj)
   }
   else if(str.indexOf("purchaseProduct") > -1){

@@ -151,8 +151,8 @@ router.get('/all-trade-history', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
     // filter by user
-    var data = transactionUtil.getAllTransactionHistory();
-    var data2 = transactionUtil.getAllAllowanceHistory();
+    var data = transactionUtil.getTransactionHistoryStatistics();
+    var data2 = transactionUtil.getAllTransactionHistory();
 
     var query = req.get("query")
     if(query){
@@ -169,13 +169,10 @@ router.get('/all-trade-history', function(req, res){
       }
     }
 
-    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+    data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
-    data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.sender = UsersManager.getFullname(o.transaction[1])
-        o.receiver = UsersManager.getFullname(o.transaction[3])
-      }
+    data.forEach(function(o,key){
+      key.sender = UsersManager.getFullname(key)
     })
 
     res.status(200)
@@ -228,6 +225,11 @@ router.post('/trade', function(req, res){
         sendErrorMsg("Error - not enough cash", res)
         //chain code doesnt throw errors to shitty ibm blockchain js bullshit
         //so manually check and throw one ourselves
+        return
+      }
+
+      if(senderId == receiverId) {
+        sendErrorMsg("Error - invalid receiverId", res)
         return
       }
 
