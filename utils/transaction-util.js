@@ -34,7 +34,7 @@ module.exports.getTransactionHistoryStatistics = function() {
   var myMap = new Map();
   var jsonValue = {};
   //sets sender points
-  transactionHistory.forEach(obj => {
+  transactionHistory.forEach(obj = function() {
       if(myMap.has(obj.transaction[1])){ //already exists, incriment values
           jsonValue = myMap.get(obj.transaction[1]);
           jsonValue.pointsSent += parseInt(obj.transaction[2])
@@ -48,7 +48,7 @@ module.exports.getTransactionHistoryStatistics = function() {
       myMap.set(obj.transaction[1], jsonValue);
   });
   //sets reciever points
-  transactionHistory.forEach(obj => {
+  transactionHistory.forEach(obj = function() {
       if(myMap.has(obj.transaction[3])){ //already exists, incriment values
           jsonValue = myMap.get(obj.transaction[3]);
           jsonValue.pointsReceived += parseInt(obj.transaction[2])

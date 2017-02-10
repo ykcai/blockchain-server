@@ -147,32 +147,21 @@ router.get('/trade-history', function(req, res){
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
-router.get('/all-trade-history', function(req, res){
+router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
     // filter by user
     var data = transactionUtil.getTransactionHistoryStatistics();
-    var data2 = transactionUtil.getAllTransactionHistory();
+    // var data2 = transactionUtil.getAllTransactionHistory();
 
-    var query = req.get("query")
-    if(query){
-      query = query.toLowerCase()
-      var arrContains = function(arr, str){
-        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
-        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+    // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
-        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-           return true
-         }
-        return false
-      }
+    for (var [key, value] of data.entries()) {
+      key.sender = UsersManager.getFullname(key)
     }
 
-    data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
+    data.forEach(function(key){
 
-    data.forEach(function(o,key){
-      key.sender = UsersManager.getFullname(key)
     })
 
     res.status(200)
