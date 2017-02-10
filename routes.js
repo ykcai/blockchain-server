@@ -46,7 +46,7 @@ setInterval(function(){
 var sendErrorMsg = function(str, res){
   console.log(str)
   res.status(400)
-  res.send({msg: str, status: 400})
+  res.json({msg: str, status: 400})
 }
 
 var filterByDates = function(data, start, end){
@@ -97,7 +97,7 @@ router.get('/user', function(req, res){
       }
       else{
         res.status(200)
-        res.send(data)
+        res.json(data)
       }
     })
   })
@@ -139,7 +139,7 @@ router.get('/trade-history', function(req, res){
     })
 
     res.status(200)
-    res.send({data: data})
+    res.json({data: data})
   })
 })
 
@@ -163,7 +163,7 @@ router.get('/trade-statistics', function(req, res){
     })
 
     res.status(200)
-    res.send({data: data})
+    res.json({data: data})
   })
 })
 
@@ -179,7 +179,7 @@ router.get('/product-history', function(req, res){
     data = filterByDates(data, req.get("startDateTime"), req.get("endDateTime"))
 
     res.status(200)
-    res.send({data: data})
+    res.json({data: data})
   })
 })
 
@@ -240,7 +240,7 @@ router.post('/trade', function(req, res){
           }
           else{
             res.status(200)
-            res.send(data)
+            res.json(data)
           }
         })
 
@@ -292,7 +292,7 @@ router.post('/createAccount', function(req, res){
         UsersManager.addFullname(username, fullname, image_64)
 
         res.status(200)
-        res.send(data)
+        res.json(data)
       }
     })
 
@@ -328,7 +328,7 @@ router.post('/login', function(req, res){
 
       dbUtil.getUser(username, res, function(rows){
         res.status(200)
-        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+        res.json({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
       })
     }
     else{
@@ -351,7 +351,7 @@ router.post('/logout', function(req, res){
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
     res.status(200)
-    res.send({msg: "Logged out"})
+    res.json({msg: "Logged out"})
   })
 })
 
@@ -368,7 +368,7 @@ router.get('/product/:prodID', function(req, res){
       }
       else{
         res.status(200)
-        res.send(data)
+        res.json(data)
       }
     })
   })
@@ -405,7 +405,7 @@ router.get('/all-products', function(req, res){
 
     Promise.all(promises).then(function(){
       res.status(200)
-      res.send(products)
+      res.json(products)
     })
   })
 })
@@ -420,7 +420,7 @@ router.get('/all-users', function(req, res){
       })
 
       res.status(200)
-      res.send(data)
+      res.json(data)
     })
   })
 })
@@ -440,7 +440,7 @@ router.post('/add-product/:name/:cost', function(req, res){
 
       data.prodID = uuid
       res.status(200)
-      res.send(data)
+      res.json(data)
     }
   })
 })
@@ -465,7 +465,7 @@ router.post('/exchange', function(req, res){
       }
       else{
         res.status(200)
-        res.send(data)
+        res.json(data)
       }
     })
   })
@@ -519,7 +519,7 @@ router.post('/purchase-product', function(req, res){
                 }
                 else{
                   res.status(200)
-                  res.send(data)
+                  res.json(data)
                 }
               })
             }
