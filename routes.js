@@ -49,6 +49,19 @@ var sendErrorMsg = function(str, res){
   res.send({msg: str, status: 400})
 }
 
+var makeMap = function(map) {
+   const out = Object.create(null)
+   map.forEach((value, key) => {
+     if (value instanceof Map) {
+       out[key] = map_to_object(value)
+     }
+     else {
+       out[key] = value
+     }
+   })
+   return out
+ }
+
 var filterByDates = function(data, start, end){
   if(start){
     var date = new Date(start)
@@ -152,18 +165,14 @@ router.get('/trade-statistics', function(req, res){
 
     // filter by user
     var data = transactionUtil.getTransactionHistoryStatistics();
-    // var data2 = transactionUtil.getAllTransactionHistory();
-
-    // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(key, value){
       value.user = UsersManager.getFullname(key)
-      if (value.user != null)
-      console.log('user found')
+      data.set(key, value)
     })
 
     res.status(200)
-    res.json({data: data})
+    res.json({data: makeMap(data)})
   })
 })
 
