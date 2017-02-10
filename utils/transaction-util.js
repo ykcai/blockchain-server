@@ -42,7 +42,8 @@ module.exports.getTransactionHistoryStatistics = function() {
       }else{ //create new key, add values
           jsonValue = {
               pointsSent: parseInt(obj.transaction[2]),
-              pointsReceived:0
+              pointsReceived: 0,
+              user: null
           }
       }
       myMap.set(obj.transaction[1], jsonValue);
@@ -58,8 +59,8 @@ module.exports.getTransactionHistoryStatistics = function() {
           console.log("oops shouldn't have gotten here !!!");
           jsonValue = {
               pointsSent: 0,
-              pointsReceived:parseInt(obj.transaction[2])
-
+              pointsReceived: parseInt(obj.transaction[2]),
+              user: null
           }
       }
       myMap.set(obj.transaction[3], jsonValue);

@@ -156,12 +156,10 @@ router.get('/trade-statistics', function(req, res){
 
     // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
-    for (var [key, value] of data.entries()) {
-      data.get(key) = UsersManager.getFullname(key)
-    }
-
-    data.forEach(function(key){
-
+    data.forEach(function(key, value){
+      value.user = UsersManager.getFullname(key)
+      if (value.user != null)
+        console.log('user found')
     })
 
     res.status(200)
