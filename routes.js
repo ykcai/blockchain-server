@@ -163,7 +163,7 @@ router.get('/trade-statistics', function(req, res){
     })
 
     res.status(200)
-    res.send({data: data})
+    res.json({data: data})
   })
 })
 
