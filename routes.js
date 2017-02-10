@@ -122,9 +122,9 @@ router.get('/trade-history', function(req, res){
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
 
         if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-           return true
-         }
+        arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+          return true
+        }
         return false
       }
     }
@@ -159,7 +159,7 @@ router.get('/trade-statistics', function(req, res){
     data.forEach(function(key, value){
       value.user = UsersManager.getFullname(key)
       if (value.user != null)
-        console.log('user found')
+      console.log('user found')
     })
 
     res.status(200)
@@ -507,7 +507,7 @@ router.post('/purchase-product', function(req, res){
           else{
             data = JSON.parse(data)
             if(data.pointsBalance < cost){
-                sendErrorMsg("Error - not enough points to buy", res)
+              sendErrorMsg("Error - not enough points to buy", res)
             }
             else{
               chaincode.invoke.purchaseProduct([prodID, username], function(e, data){
