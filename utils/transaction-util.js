@@ -65,7 +65,7 @@ module.exports.getTransactionHistoryStatistics = function() {
       myMap.set(obj.transaction[3], jsonValue);
   });
 
-  for (var [key, value] of myMap.entries()) {
+  for (var {key, value} of myMap.entries()) {
     console.log(key + ' = ' + value);
   }
   return myMap;

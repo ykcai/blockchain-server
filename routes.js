@@ -157,7 +157,7 @@ router.get('/trade-statistics', function(req, res){
     // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
     for (var [key, value] of data.entries()) {
-      key.sender = UsersManager.getFullname(key)
+      data.get(key) = UsersManager.getFullname(key)
     }
 
     data.forEach(function(key){
