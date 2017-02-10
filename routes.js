@@ -62,34 +62,43 @@ var Strategy = new OpenIDConnectStrategy({
 passport.use(Strategy);
 
 router.get('/auth/sso/callback',function(req,res,next) {
+  var redirect_url=req.session.originalUrl
   passport.authenticate('openidconnect', {
-    successRedirect: '/auth/test',
+    successRedirect: '/auth/success',
     failureRedirect: '/auth/failure',
   })(req,res,next);
 });
-//for tesing purposes
-router.get('/auth/test',function(req,res,next){
-  res.send({check:"This Works"})
-})
 router.get('/auth/failure', function(req, res) {
-  res.send({check:"This doesn't work"})
-  //sendErrorMsg('login failed',res);
+  //res.send({check:"This doesn't work"})
+  sendErrorMsg('W3id login failed',res);
 });
-router.get('/auth/logout',function(req,res){
-  req.logout()
+router.get('/auth/success',function(req,res){
+  res.send(req.user.emailaddress)
+})
+router.get('/auth/checkAuth',function(req,res){
+  console.log(req)
   if (req.isAuthenticated()){
-    res.redirect('/auth/test')
+    res.send({status:true,user:req.user})
   }else{
-    res.redirect('/auth/failure')
+    res.send({status:false})
   }
 })
+router.post('/auth/logout',function(req,res){
+  req.logout()
+  res.redirect('/logout')
+})
+
+router.get('/auth/user',function(req,res){
+  res.senf({username:req.user.emailaddress})
+})
+
 //end testing
-router.get('/login', passport.authenticate('openidconnect', {}));
+router.get('/auth/authenticate', passport.authenticate('openidconnect', {}));
 
 function ensureAuthenticated(req, res, next) {
   if(!req.isAuthenticated()) {
     req.session.originalUrl = req.originalUrl;
-    res.redirect('/login');
+    res.redirect('/auth/authenticate');
   } else {
     return next();
   }
@@ -358,10 +367,6 @@ router.post('/createAccount', function(req, res){
     return
   }
 
-  if(!UsersManager.isIBM(username)){
-    sendErrorMsg("Not an IBM email", res)
-    return
-  }
 
   chaincode.query.read([username], function(e, data){
     if(e){
@@ -396,40 +401,42 @@ router.post('/createAccount', function(req, res){
 
 // body: username, password
 // response: JSON
-router.post('/auth/dbcheck', function(req, res){
-  var username = req.body.username
-  var password = req.body.password
-
-  if(!username || !password){
-    sendErrorMsg("Missing data", res)
-    return
-  }
-
-  chaincode.query.read([username], function(e, data){
-    if(e){
-      console.log(e)
-      sendErrorMsg("Blockchain error", res)
-      return
-    }
-    if(!data){
-      sendErrorMsg("Error - Data not found for some reason?", res)
-      return
-    }
-
-    var hash = JSON.parse(data).password
-
-    if(UsersManager.comparePasswords(password, hash)){
-      var token = UsersManager.createToken(username)
-
-      dbUtil.getUser(username, res, function(rows){
-        res.status(200)
-        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
-      })
-    }
-    else{
-      sendErrorMsg("Wrong password", res)
-    }
-  })
+router.get('/login',ensureAuthenticated, function(req, res){
+  var username = req.user.emailaddress
+  res.send({username:username})
+  //TODO: needs to be removed
+  // var password = req.body.password
+  //
+  // if(!username || !password){
+  //   sendErrorMsg("Missing data", res)
+  //   return
+  // }
+  //
+  // chaincode.query.read([username], function(e, data){
+  //   if(e){
+  //     console.log(e)
+  //     sendErrorMsg("Blockchain error", res)
+  //     return
+  //   }
+  //   if(!data){
+  //     sendErrorMsg("Error - Data not found for some reason?", res)
+  //     return
+  //   }
+  //
+  //   var hash = JSON.parse(data).password
+  //
+  //   if(UsersManager.comparePasswords(password, hash)){
+  //     var token = UsersManager.createToken(username)
+  //
+  //     dbUtil.getUser(username, res, function(rows){
+  //       res.status(200)
+  //       res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+  //     })
+  //   }
+  //   else{
+  //     sendErrorMsg("Wrong password", res)
+  //   }
+  // })
 })
 
 // headers: token
