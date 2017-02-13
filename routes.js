@@ -76,9 +76,9 @@ router.get('/auth/success',function(req,res){
   res.send(req.user.emailaddress)
 })
 router.get('/auth/checkAuth',function(req,res){
-  console.log(req)
+  //console.log(req)
   if (req.isAuthenticated()){
-    res.send({status:true,user:req.user})
+    res.send({status:true})
   }else{
     res.send({status:false})
   }
@@ -89,7 +89,7 @@ router.post('/auth/logout',function(req,res){
 })
 
 router.get('/auth/user',function(req,res){
-  res.senf({username:req.user.emailaddress})
+  res.senf({username:req.user.emailaddress, fullname: req.user.cn})
 })
 
 //end testing
@@ -353,10 +353,14 @@ router.post('/trade', function(req, res){
     })
   })
 })
+//TODO: create API endpoint for just adding a photo to an account
+
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
 router.post('/createAccount', function(req, res){
+
+  //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
   var username = req.body.username
   var password = req.body.password
   var fullname = req.body.fullname
@@ -401,9 +405,12 @@ router.post('/createAccount', function(req, res){
 
 // body: username, password
 // response: JSON
-router.get('/login',ensureAuthenticated, function(req, res){
+router.get('/login', function(req, res){
   var username = req.user.emailaddress
   res.send({username:username})
+  //TODO: implement logging in based on the email address.
+  //Probably can reuse a bunch of this code
+
   //TODO: needs to be removed
   // var password = req.body.password
   //
