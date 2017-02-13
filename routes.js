@@ -103,14 +103,13 @@ router.get('/auth/user',function(req,res){
 
     dbUtil.getUser(username, res, function(rows){
       res.status(200)
-      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username})
     })
 
     else{
       sendErrorMsg("Wrong password", res)
     }
   })
-  res.send({username:req.user.emailaddress, fullname: req.user.cn})
 })
 
 //end testing
@@ -415,7 +414,7 @@ router.get('/createAccount', function(req, res){
         UsersManager.addFullname(username, fullname, image_64)
 
         res.status(200)
-        res.send(data)
+        res.send({token:token,fullname:fullname,image_64:image_64,username:username})
       }
     })
 
