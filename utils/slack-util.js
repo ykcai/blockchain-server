@@ -40,7 +40,6 @@ var executePostAPIcall = function(URL, params, headersParams, cb){
 module.exports.sendTradeNotificationToSlack = function(res, sender, reciever, amount, reason, client, cb){
     const URL = SERVER_URL + "/trade_notification?sender=" + sender + "&reciever=" + reciever + "&amount="
                         + amount + "&reason=" + reason + "&client=" + client;
-    console.log("GOTTTT TO FUNCITON URL : " + URL);
     request({
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -49,16 +48,6 @@ module.exports.sendTradeNotificationToSlack = function(res, sender, reciever, am
         body: null,
         method: 'POST'
     }, (err, result, body) => {
-        console.log("SLACK NOTIFICATION ERR: " + err);
-        console.log("SLACK NOTIFICATION res: " + res);
-        console.log("SLACK NOTIFICATION body: " + body);
         cb(res, err, result, body);
     });
-    //
-    // executePostAPIcall(URL, {'sender':sender, 'reciever':reciever, 'amount':amount, 'reason':reason}, null, function(err, result, body){
-    //     console.log("SLACK NOTIFICATION ERR: " + err);
-    //     console.log("SLACK NOTIFICATION res: " + res);
-    //     console.log("SLACK NOTIFICATION body: " + body);
-    //     cb(res, err, result, body)
-    // });
 }
