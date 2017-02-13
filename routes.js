@@ -70,15 +70,6 @@ var filterByDates = function(data, start, end){
   return data
 }
 
-var filterByCurrentUser = function(data, username){
-  if(start){
-    var date = new Date(start)
-    data = data.filter(function(o){
-      var d = new Date(o.timestamp.seconds*1000)
-      return d >= date
-    })
-  }
-
 module.exports.setup = function(sdk, cc){
   ibc = sdk
   chaincode = cc
@@ -112,6 +103,75 @@ router.get('/user', function(req, res){
   })
 })
 
+
+
+// headers: username, token
+// response: JSON
+router.get('/slack/user', function(req, res){
+    console.log("req.get('username'): " + req.get("username"));
+    chaincode.query.read([req.get("username")], function(e, data){
+      if(e){
+        sendErrorMsg("Blockchain Error " + e, res)
+      }
+      else if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+      }
+      else{
+        res.status(200)
+        res.send(data)
+      }
+    })
+})
+
+
+// headers: token
+// body: username
+// response: JSON
+router.post('/slack/exchange', function(req, res){
+  var username = req.body.username
+  var pointsToExchange = req.body.points
+
+  if(!username){sendErrorMsg("Missing username", res)}
+  if(!pointsToExchange){sendErrorMsg("Missing pointsToExchange", res)}
+  if(!username || !pointsToExchange){return}
+
+    chaincode.invoke.exchange([username, pointsToExchange], function(e, data){
+      if(e){
+        sendErrorMsg("Blockchain Error " + e, res)
+      }
+      else if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+      }
+      else{
+        res.status(200)
+        res.send(data)
+      }
+    })
+})
+
+
+
+// headers: token
+// body: senderId, receiverId, amount, reason
+// response: JSON
+router.post('/slack/trade', function(req, res){
+  var senderId = req.body.senderId
+  var receiverId = req.body.receiverId
+  var amount = req.body.amount
+  var reason = req.body.reason
+
+  var client = null;
+  if(req.body.client) {client = req.body.client}
+
+  if(!senderId){sendErrorMsg("Missing senderId", res)}
+  if(!receiverId){sendErrorMsg("Missing receiverId", res)}
+  if(!amount){sendErrorMsg("Missing amount", res)}
+  if(!reason){sendErrorMsg("Missing reason", res)}
+  if(!senderId || !receiverId || !amount || !reason){return}
+
+  trade(senderId, amount, receiverId, reason, res);
+})
+
 // Trade history - gets the trades the user did & allowances
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
@@ -131,13 +191,13 @@ router.get('/trade-history', function(req, res){
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
 
         if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-           return true
-         }
+        arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+          return true
+        }
         return false
       }
     }
-    data = filterByCurrentUser
+
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
@@ -156,35 +216,19 @@ router.get('/trade-history', function(req, res){
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
-router.get('/all-transactions', function(req, res){
+router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
     // filter by user
-    var data = transactionUtil.getAllTransactionHistory();
-    var data2 = transactionUtil.getAllAllowanceHistory()
+    var data = transactionUtil.getTransactionHistoryStatistics();
+    // var data2 = transactionUtil.getAllTransactionHistory();
 
-    var query = req.get("query")
-    if(query){
-      query = query.toLowerCase()
-      var arrContains = function(arr, str){
-        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
-        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+    // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
-        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-           arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-           return true
-         }
-        return false
-      }
-    }
-
-    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
-
-    data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.sender = UsersManager.getFullname(o.transaction[1])
-        o.receiver = UsersManager.getFullname(o.transaction[3])
-      }
+    data.forEach(function(key, value){
+      value.user = UsersManager.getFullname(key)
+      if (value.user != null)
+      console.log('user found')
     })
 
     res.status(200)
@@ -208,6 +252,70 @@ router.get('/product-history', function(req, res){
   })
 })
 
+
+
+
+
+
+
+var trade = function(senderId, amount, receiverId, reason, res){
+  chaincode.query.read([senderId], function(e, data){
+    if(e){
+      sendErrorMsg("Blockchain Error " + e, res)
+      return
+    }
+    if(!data){
+      sendErrorMsg("Error - Sender user doesnt exist", res)
+      return
+    }
+
+    if(data.giveBalance < amount){
+      sendErrorMsg("Error - not enough cash", res)
+      //chain code doesnt throw errors to shitty ibm blockchain js bullshit
+      //so manually check and throw one ourselves
+      return
+    }
+
+    if(senderId == receiverId) {
+      sendErrorMsg("Error - invalid receiverId", res)
+      return
+    }
+
+    chaincode.query.read([receiverId], function(e, data){
+      if(e){
+        sendErrorMsg("Blockchain Error " + e, res)
+        return
+      }
+      if(!data){
+        sendErrorMsg("Error - Receiver user doesnt exist", res)
+        return
+      }
+
+      chaincode.invoke.set_user([senderId, amount, receiverId, reason], function(e, data){
+        if(e){
+          sendErrorMsg("Blockchain Error " + e, res)
+          return
+        }
+        else if(!data){
+          sendErrorMsg("Error - Data not found for some reason?", res)
+        }
+        else{
+          res.status(200)
+          res.send(data)
+        }
+      })
+
+    })
+
+  })
+}
+
+
+
+
+
+
+
 // headers: token
 // body: senderId, receiverId, amount, reason
 // response: JSON
@@ -217,57 +325,23 @@ router.post('/trade', function(req, res){
   var amount = req.body.amount
   var reason = req.body.reason
 
-  if(!senderId || !receiverId || !amount || !reason){
-    sendErrorMsg("Missing data", res)
-    return
+  var client = null;
+  if(req.body.client) {client = req.body.client}
+
+  if(!senderId){sendErrorMsg("Missing senderId", res)}
+  if(!receiverId){sendErrorMsg("Missing receiverId", res)}
+  if(!amount){sendErrorMsg("Missing amount", res)}
+  if(!reason){sendErrorMsg("Missing reason", res)}
+  if(!senderId || !receiverId || !amount || !reason){return}
+
+  if(client == 'SLACK'){
+    trade(senderId, amount, receiverId, reason, res);
+  }else{
+    UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
+      trade(senderId, amount, receiverId, reason, res);
+    })
   }
 
-  UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
-    chaincode.query.read([senderId], function(e, data){
-      if(e){
-        sendErrorMsg("Blockchain Error " + e, res)
-        return
-      }
-      if(!data){
-        sendErrorMsg("Error - Sender user doesnt exist", res)
-        return
-      }
-
-      if(data.giveBalance < amount){
-        sendErrorMsg("Error - not enough cash", res)
-        //chain code doesnt throw errors to shitty ibm blockchain js bullshit
-        //so manually check and throw one ourselves
-        return
-      }
-
-      chaincode.query.read([receiverId], function(e, data){
-        if(e){
-          sendErrorMsg("Blockchain Error " + e, res)
-          return
-        }
-        if(!data){
-          sendErrorMsg("Error - Receiver user doesnt exist", res)
-          return
-        }
-
-        chaincode.invoke.set_user([senderId, amount, receiverId, reason], function(e, data){
-          if(e){
-            sendErrorMsg("Blockchain Error " + e, res)
-            return
-          }
-          else if(!data){
-            sendErrorMsg("Error - Data not found for some reason?", res)
-          }
-          else{
-            res.status(200)
-            res.send(data)
-          }
-        })
-
-      })
-
-    })
-  })
 })
 
 // body: username, password, fullname, image_64 (optional)
@@ -324,60 +398,37 @@ router.post('/createAccount', function(req, res){
 router.post('/login', function(req, res){
   var username = req.body.username
   var password = req.body.password
-  var client = req.body.client
 
-  if (client = 'SLACK') {
-    if(!username){
-      sendErrorMsg("Missing data", res)
-      return
-    }
-    chaincode.query.read([username], function(e, data){
-      if(e){
-        console.log(e)
-        sendErrorMsg("Blockchain error", res)
-        return
-      }
-      if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-        return
-      }
-      dbUtil.getUser(username, res, function(rows) {
-        res.status(200)
-        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})})
-      }
-    })
-  } else {
-    if(!username || !password){
-      sendErrorMsg("Missing data", res)
-      return
-    }
-
-    chaincode.query.read([username], function(e, data){
-      if(e){
-        console.log(e)
-        sendErrorMsg("Blockchain error", res)
-        return
-      }
-      if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-        return
-      }
-
-      var hash = JSON.parse(data).password
-
-      if(UsersManager.comparePasswords(password, hash)){
-        var token = UsersManager.createToken(username)
-
-        dbUtil.getUser(username, res, function(rows){
-          res.status(200)
-          res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
-        })
-      }
-      else{
-        sendErrorMsg("Wrong password", res)
-      }
-    })
+  if(!username || !password){
+    sendErrorMsg("Missing data", res)
+    return
   }
+
+  chaincode.query.read([username], function(e, data){
+    if(e){
+      console.log(e)
+      sendErrorMsg("Blockchain error", res)
+      return
+    }
+    if(!data){
+      sendErrorMsg("Error - Data not found for some reason?", res)
+      return
+    }
+
+    var hash = JSON.parse(data).password
+
+    if(UsersManager.comparePasswords(password, hash)){
+      var token = UsersManager.createToken(username)
+
+      dbUtil.getUser(username, res, function(rows){
+        res.status(200)
+        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+      })
+    }
+    else{
+      sendErrorMsg("Wrong password", res)
+    }
+  })
 })
 
 // headers: token
@@ -550,7 +601,7 @@ router.post('/purchase-product', function(req, res){
           else{
             data = JSON.parse(data)
             if(data.pointsBalance < cost){
-                sendErrorMsg("Error - not enough points to buy", res)
+              sendErrorMsg("Error - not enough points to buy", res)
             }
             else{
               chaincode.invoke.purchaseProduct([prodID, username], function(e, data){
