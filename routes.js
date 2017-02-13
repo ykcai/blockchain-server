@@ -105,10 +105,6 @@ router.get('/auth/user',function(req,res){
       res.status(200)
       res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username})
     })
-
-    else{
-      sendErrorMsg("Wrong password", res)
-    }
   })
 })
 
