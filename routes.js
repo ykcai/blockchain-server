@@ -72,6 +72,7 @@ router.get('/auth/failure', function(req, res) {
   //res.send({check:"This doesn't work"})
   sendErrorMsg('W3id login failed',res);
 });
+//webview closes at this api URL
 router.get('/auth/success',function(req,res){
   res.send(req.user.emailaddress)
 })
@@ -83,13 +84,33 @@ router.get('/auth/checkAuth',function(req,res){
     res.send({status:false})
   }
 })
-router.post('/auth/logout',function(req,res){
-  req.logout()
-  res.redirect('/logout')
-})
 
 router.get('/auth/user',function(req,res){
-  res.senf({username:req.user.emailaddress, fullname: req.user.cn})
+  var username = req.user.emailaddress
+  chaincode.query.read([username], function(e, data){
+    if(e){
+      console.log(e)
+      sendErrorMsg("Blockchain error", res)
+      return
+    }
+    if(!data){
+      console.log("Error - Data not found for some reason?")
+      req.redirect('/createAccount')
+      return
+    }
+
+    var token = UsersManager.createToken(username)
+
+    dbUtil.getUser(username, res, function(rows){
+      res.status(200)
+      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
+    })
+
+    else{
+      sendErrorMsg("Wrong password", res)
+    }
+  })
+  res.send({username:req.user.emailaddress, fullname: req.user.cn})
 })
 
 //end testing
@@ -97,7 +118,7 @@ router.get('/auth/authenticate', passport.authenticate('openidconnect', {}));
 
 function ensureAuthenticated(req, res, next) {
   if(!req.isAuthenticated()) {
-    req.session.originalUrl = req.originalUrl;
+    //req.session.originalUrl = req.originalUrl;
     res.redirect('/auth/authenticate');
   } else {
     return next();
@@ -358,15 +379,13 @@ router.post('/trade', function(req, res){
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
-router.post('/createAccount', function(req, res){
+router.get('/createAccount', function(req, res){
 
   //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
-  var username = req.body.username
-  var password = req.body.password
-  var fullname = req.body.fullname
-  var image_64 = req.body.image_64
-
-  if(!username || !password || !fullname){
+  var username = req.user.emailaddress
+  var fullname = req.user.cn
+  var image_64 = ''
+  if(!username || !fullname){
     sendErrorMsg("Missing data", res)
     return
   }
@@ -382,7 +401,7 @@ router.post('/createAccount', function(req, res){
       return
     }
 
-    chaincode.invoke.createAccount([username, UsersManager.hashPassword(password)], function(e, data){
+    chaincode.invoke.createAccount([username], function(e, data){
       if(e){
         sendErrorMsg("Error " + e, res)
       }
@@ -403,48 +422,6 @@ router.post('/createAccount', function(req, res){
   })
 })
 
-// body: username, password
-// response: JSON
-router.get('/login', function(req, res){
-  var username = req.user.emailaddress
-  res.send({username:username})
-  //TODO: implement logging in based on the email address.
-  //Probably can reuse a bunch of this code
-
-  //TODO: needs to be removed
-  // var password = req.body.password
-  //
-  // if(!username || !password){
-  //   sendErrorMsg("Missing data", res)
-  //   return
-  // }
-  //
-  // chaincode.query.read([username], function(e, data){
-  //   if(e){
-  //     console.log(e)
-  //     sendErrorMsg("Blockchain error", res)
-  //     return
-  //   }
-  //   if(!data){
-  //     sendErrorMsg("Error - Data not found for some reason?", res)
-  //     return
-  //   }
-  //
-  //   var hash = JSON.parse(data).password
-  //
-  //   if(UsersManager.comparePasswords(password, hash)){
-  //     var token = UsersManager.createToken(username)
-  //
-  //     dbUtil.getUser(username, res, function(rows){
-  //       res.status(200)
-  //       res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
-  //     })
-  //   }
-  //   else{
-  //     sendErrorMsg("Wrong password", res)
-  //   }
-  // })
-})
 
 // headers: token
 // body: username
