@@ -19,10 +19,11 @@
     "mysql": "2.11.x",
     "passport": "^0.3.2",
     "passport-idaas-openidconnect": "latest",
+    "request": "^2.79.0",
     "ws": "1.0.1"
   },
   "engines": {
-    "node": "0.12.0"
+    "node": "6.9.5"
   },
   "config": {
     "DATABASE": {

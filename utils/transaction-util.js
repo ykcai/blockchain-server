@@ -30,12 +30,43 @@ module.exports.getProductHistory = function(username){
   })
 }
 
+module.exports.getTransactionHistoryStatistics = function() {
+  let myMap = new Map();
+  var jsonValue = {};
+  //sets sender points
+  transactionHistory.forEach(function(obj) {
+      if(myMap.has(obj.transaction[1])){ //already exists, incriment values
+          jsonValue = myMap.get(obj.transaction[1]);
+          jsonValue.pointsSent += parseInt(obj.transaction[2])
+
+      }else{ //create new key, add values
+          jsonValue = {
+              pointsSent: parseInt(obj.transaction[2]),
+              pointsReceived: 0,
+              user: null
+          }
+      }
+      myMap.set(obj.transaction[1], jsonValue);
+  });
+
+  //sets reciever points
+  transactionHistory.forEach(function(obj) {
+      if(myMap.has(obj.transaction[3])){ //already exists, incriment values
+          jsonValue = myMap.get(obj.transaction[3]);
+          jsonValue.pointsReceived += parseInt(obj.transaction[2])
+      }
+      myMap.set(obj.transaction[3], jsonValue);
+  });
+  return myMap;
+}
+
 module.exports.addTransaction = function(transaction, callback){
   var str = atob(transaction.payload)
 
   var blockObj = {
     chaincodeID: transaction.chaincodeID,
-    timestamp: transaction.timestamp
+    timestamp: transaction.timestamp,
+    detail: transaction.transaction
   }
 
   if(str.indexOf("set_user") > -1){
