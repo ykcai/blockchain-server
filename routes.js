@@ -96,7 +96,7 @@ router.get('/auth/user',function(req,res){
     }
     if(!data){
       console.log("Error - Data not found for some reason?")
-      req.redirect('/createAccount')
+      res.redirect('/createAccount')
       return
     }
 
