@@ -524,8 +524,6 @@ router.post('/logout', function(req, res){
     req.logout()
     req.session.destroy(function(error){
       res.redirect('https://givebackauth-nerycy5fdu-cs19.iam.ibmcloud.com/idaas/mtfim/sps/idaas/logout')
-      res.status(200)
-      res.send({msg: "Logged out"})
     })
   })
 })
