@@ -233,15 +233,11 @@ router.get('/trade-history', function(req, res){
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
-    // filter by user
     var data = transactionUtil.getTransactionHistoryStatistics();
-    // var data2 = transactionUtil.getAllTransactionHistory();
-
-    // data = filterByDates(data2, req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(key, value){
       value.user = UsersManager.getFullname(key)
-      if (value.user != null)
+      data.set(key, value);
       console.log('user found')
     })
 
