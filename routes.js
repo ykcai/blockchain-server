@@ -522,8 +522,10 @@ router.post('/logout', function(req, res){
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
     req.logout()
-    res.status(200)
-    res.send({msg: "Logged out"})
+    req.session.destroy(function(error){
+      res.status(200)
+      res.send({msg: "Logged out"})
+    })
   })
 })
 
