@@ -53,8 +53,8 @@ var Strategy = new OpenIDConnectStrategy({
               },
       function(iss, sub, profile, accessToken, refreshToken, params, done) {
         process.nextTick(function() {
-            // profile.accessToken = accessToken;
-            // profile.refreshToken = refreshToken;
+            profile.accessToken = accessToken;
+            profile.refreshToken = refreshToken;
             done(null, profile);
         })
       }
@@ -521,8 +521,9 @@ router.post('/logout', function(req, res){
   }
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
-    console.log(req.session)
+    req.logout()
     req.session.destroy(function(error){
+      res.redirect('https://givebackauth-nerycy5fdu-cs19.iam.ibmcloud.com/idaas/mtfim/sps/idaas/logout')
       res.status(200)
       res.send({msg: "Logged out"})
     })
