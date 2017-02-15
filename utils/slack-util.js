@@ -2,8 +2,8 @@ var request = require('request');
 var querystring = require('querystring');
 
 // const SERVER_URL = "http://blockchain-zunair-server-dev-2.mybluemix.net/slack";
-// const SERVER_URL = "https://bf18dd8d.ngrok.io/api";
-const SERVER_URL = "https://slackbot-test-server.mybluemix.net/api";
+const SERVER_URL = "https://bf18dd8d.ngrok.io/api";
+// const SERVER_URL = "https://slackbot-test-server.mybluemix.net/api";
 
 var executePostAPIcall = function(URL, params, headersParams, cb){
         if(!params){
