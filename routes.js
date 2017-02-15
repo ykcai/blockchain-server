@@ -53,8 +53,8 @@ var Strategy = new OpenIDConnectStrategy({
               },
       function(iss, sub, profile, accessToken, refreshToken, params, done) {
         process.nextTick(function() {
-            profile.accessToken = accessToken;
-            profile.refreshToken = refreshToken;
+            // profile.accessToken = accessToken;
+            // profile.refreshToken = refreshToken;
             done(null, profile);
         })
       }
@@ -521,7 +521,7 @@ router.post('/logout', function(req, res){
   }
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
-    req.logout()
+    console.log(req.session)
     req.session.destroy(function(error){
       res.status(200)
       res.send({msg: "Logged out"})
