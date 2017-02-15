@@ -5,14 +5,123 @@ var UUID            = require('./utils/UUID-util')
 var CONFIG          = require('./package').config
 var UsersManager    = require('./users-manager')
 var transactionUtil = require('./utils/transaction-util')
+var passport        = require('passport')
+var cookieParser    = require('cookie-parser');
+var session         = require('express-session');
 var slackUtil = require('./utils/slack-util')
-
 var ibc
 var chaincode
 
 dbUtil.getAllUsers(null, null, function(rows){
   UsersManager.setup(rows)
 })
+
+// ---- AUTHENTICATION ----- //
+
+router.use(cookieParser());
+router.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: true }));
+router.use(passport.initialize());
+router.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+   done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+   done(null, obj);
+});
+
+var ssoConfig = CONFIG.SSO;
+var client_id = ssoConfig.clientID;
+var client_secret = ssoConfig.secret;
+var authorization_url = ssoConfig.authURL;
+var token_url = ssoConfig.tokenURL;
+var issuer_id = ssoConfig.issuerID;
+var callback_url = ssoConfig.callbackURL;
+
+var OpenIDConnectStrategy = require('passport-idaas-openidconnect').IDaaSOIDCStrategy;
+var Strategy = new OpenIDConnectStrategy({
+                authorizationURL : authorization_url,
+                tokenURL : token_url,
+                clientID : client_id,
+                scope : 'email',
+                response_type : 'code',
+                clientSecret : client_secret,
+                callbackURL : callback_url,
+                skipUserProfile : true,
+                issuer : issuer_id
+              },
+      function(iss, sub, profile, accessToken, refreshToken, params, done) {
+        process.nextTick(function() {
+            profile.accessToken = accessToken;
+            profile.refreshToken = refreshToken;
+            done(null, profile);
+        })
+      }
+)
+
+passport.use(Strategy);
+
+router.get('/auth/sso/callback',function(req,res,next) {
+  var redirect_url=req.session.originalUrl
+  passport.authenticate('openidconnect', {
+    successRedirect: '/auth/success',
+    failureRedirect: '/auth/failure',
+  })(req,res,next);
+});
+router.get('/auth/failure', function(req, res) {
+  //res.send({check:"This doesn't work"})
+  sendErrorMsg('W3id login failed',res);
+});
+//webview closes at this api URL
+router.get('/auth/success',function(req,res){
+  res.send(req.user.emailaddress)
+})
+router.get('/auth/checkAuth',function(req,res){
+  //console.log(req)
+  if (req.isAuthenticated()){
+    res.send({status:true})
+  }else{
+    res.send({status:false})
+  }
+})
+
+router.get('/auth/user',function(req,res){
+  var username = req.user.emailaddress
+  chaincode.query.read([username], function(e, data){
+    if(e){
+      console.log(e)
+      sendErrorMsg("Blockchain error", res)
+      return
+    }
+    if(!data){
+      console.log("Error - Data not found for some reason?")
+      req.redirect('/createAccount')
+      return
+    }
+
+    var token = UsersManager.createToken(username)
+
+    dbUtil.getUser(username, res, function(rows){
+      res.status(200)
+      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username})
+    })
+  })
+})
+
+//end testing
+router.get('/auth/authenticate', passport.authenticate('openidconnect', {}));
+
+function ensureAuthenticated(req, res, next) {
+  if(!req.isAuthenticated()) {
+    //req.session.originalUrl = req.originalUrl;
+    res.redirect('/auth/authenticate');
+  } else {
+    return next();
+  }
+}
+
+// --- END AUTHENTICATION ---- //
 
 // Script to allocate allowance to users based on db every X seconds
 setInterval(function(){
@@ -350,24 +459,22 @@ router.post('/trade', function(req, res){
     })
 
 })
+//TODO: create API endpoint for just adding a photo to an account
+
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
-router.post('/createAccount', function(req, res){
-  var username = req.body.username
-  var password = req.body.password
-  var fullname = req.body.fullname
-  var image_64 = req.body.image_64
+router.get('/createAccount', function(req, res){
 
-  if(!username || !password || !fullname){
+  //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
+  var username = req.user.emailaddress
+  var fullname = req.user.cn
+  var image_64 = ''
+  if(!username || !fullname){
     sendErrorMsg("Missing data", res)
     return
   }
 
-  if(!UsersManager.isIBM(username)){
-    sendErrorMsg("Not an IBM email", res)
-    return
-  }
 
   chaincode.query.read([username], function(e, data){
     if(e){
@@ -379,7 +486,7 @@ router.post('/createAccount', function(req, res){
       return
     }
 
-    chaincode.invoke.createAccount([username, UsersManager.hashPassword(password)], function(e, data){
+    chaincode.invoke.createAccount([username], function(e, data){
       if(e){
         sendErrorMsg("Error " + e, res)
       }
@@ -393,50 +500,13 @@ router.post('/createAccount', function(req, res){
         UsersManager.addFullname(username, fullname, image_64)
 
         res.status(200)
-        res.send(data)
+        res.send({token:token,fullname:fullname,image_64:image_64,username:username})
       }
     })
 
   })
 })
 
-// body: username, password
-// response: JSON
-router.post('/login', function(req, res){
-  var username = req.body.username
-  var password = req.body.password
-
-  if(!username || !password){
-    sendErrorMsg("Missing data", res)
-    return
-  }
-
-  chaincode.query.read([username], function(e, data){
-    if(e){
-      console.log(e)
-      sendErrorMsg("Blockchain error", res)
-      return
-    }
-    if(!data){
-      sendErrorMsg("Error - Data not found for some reason?", res)
-      return
-    }
-
-    var hash = JSON.parse(data).password
-
-    if(UsersManager.comparePasswords(password, hash)){
-      var token = UsersManager.createToken(username)
-
-      dbUtil.getUser(username, res, function(rows){
-        res.status(200)
-        res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64})
-      })
-    }
-    else{
-      sendErrorMsg("Wrong password", res)
-    }
-  })
-})
 
 // headers: token
 // body: username
@@ -451,6 +521,7 @@ router.post('/logout', function(req, res){
   }
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
+    req.logout()
     res.status(200)
     res.send({msg: "Logged out"})
   })
@@ -476,7 +547,7 @@ router.get('/product/:prodID', function(req, res){
 })
 
 // response: JSON
-router.get('/all-products', function(req, res){
+router.get('/all-products',ensureAuthenticated, function(req, res){
   var products = []
   var prodIDs = []
 

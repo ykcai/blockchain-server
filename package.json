@@ -11,10 +11,14 @@
     "bcrypt": "0.8.x",
     "body-parser": "1.0.2",
     "cfenv": "^1.0.0",
+    "cookie-parser": "^1.4.3",
     "cors": "2.5.3",
     "express": "4.0.0",
+    "express-session": "^1.15.0",
     "ibm-blockchain-js": "1.3.*",
     "mysql": "2.11.x",
+    "passport": "^0.3.2",
+    "passport-idaas-openidconnect": "latest",
     "request": "^2.79.0",
     "ws": "1.0.1"
   },
@@ -27,6 +31,14 @@
       "user": "bb9c55be9355d3",
       "password": "c1d7919b",
       "database": "ad_7965cfdb05ef18b"
+    },
+    "SSO": {
+      "clientID": "siVMrzn9D9",
+      "secret": "gmSpkITjR6",
+      "authURL": "https://givebackauth-rb8hdnfhoa-ct20.iam.ibmcloud.com/idaas/oidc/endpoint/default/authorize",
+      "tokenURL": "https://givebackauth-rb8hdnfhoa-ct20.iam.ibmcloud.com/idaas/oidc/endpoint/default/token",
+      "issuerID": "givebackauth-rb8hdnfhoa-ct20.iam.ibmcloud.com",
+      "callbackURL": "https://peter-blockedchain.mybluemix.net/auth/sso/callback"
     },
     "ALLOWANCE_SCHED": 604800000,
     "DASHBOARD_WS_KEY": "e5df7dd1-488e-4757-b6d6-38ebfd554a97"
