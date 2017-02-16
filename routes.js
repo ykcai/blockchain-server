@@ -24,11 +24,11 @@ router.use(passport.initialize());
 router.use(passport.session());
 
 passport.serializeUser(function(user, done) {
-   done(null, user);
+  done(null, user);
 });
 
 passport.deserializeUser(function(obj, done) {
-   done(null, obj);
+  done(null, obj);
 });
 
 var ssoConfig = CONFIG.SSO;
@@ -41,23 +41,23 @@ var callback_url = ssoConfig.callbackURL;
 
 var OpenIDConnectStrategy = require('passport-idaas-openidconnect').IDaaSOIDCStrategy;
 var Strategy = new OpenIDConnectStrategy({
-                authorizationURL : authorization_url,
-                tokenURL : token_url,
-                clientID : client_id,
-                scope : 'email',
-                response_type : 'code',
-                clientSecret : client_secret,
-                callbackURL : callback_url,
-                skipUserProfile : true,
-                issuer : issuer_id
-              },
-      function(iss, sub, profile, accessToken, refreshToken, params, done) {
-        process.nextTick(function() {
-            profile.accessToken = accessToken;
-            profile.refreshToken = refreshToken;
-            done(null, profile);
-        })
-      }
+  authorizationURL : authorization_url,
+  tokenURL : token_url,
+  clientID : client_id,
+  scope : 'email',
+  response_type : 'code',
+  clientSecret : client_secret,
+  callbackURL : callback_url,
+  skipUserProfile : true,
+  issuer : issuer_id
+},
+function(iss, sub, profile, accessToken, refreshToken, params, done) {
+  process.nextTick(function() {
+    profile.accessToken = accessToken;
+    profile.refreshToken = refreshToken;
+    done(null, profile);
+  })
+}
 )
 
 passport.use(Strategy);
@@ -160,17 +160,17 @@ var sendErrorMsg = function(str, res){
 }
 
 var makeMap = function(map) {
-   const out = Object.create(null)
-   map.forEach((value, key) => {
-     if (value instanceof Map) {
-       out[key] = map_to_object(value)
-     }
-     else {
-       out[key] = value
-     }
-   })
-   return out
- }
+  const out = Object.create(null)
+  map.forEach((value, key) => {
+    if (value instanceof Map) {
+      out[key] = map_to_object(value)
+    }
+    else {
+      out[key] = value
+    }
+  })
+  return out
+}
 
 var filterByDates = function(data, start, end){
   if(start){
@@ -226,26 +226,23 @@ router.get('/user', function(req, res){
   })
 })
 
-
-
 // headers: username, token
 // response: JSON
 router.get('/slack/user', function(req, res){
-    console.log("req.get('username'): " + req.get("username"));
-    chaincode.query.read([req.get("username")], function(e, data){
-      if(e){
-        sendErrorMsg("Blockchain Error " + e, res)
-      }
-      else if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-      }
-      else{
-        res.status(200)
-        res.send(data)
-      }
-    })
+  console.log("req.get('username'): " + req.get("username"));
+  chaincode.query.read([req.get("username")], function(e, data){
+    if(e){
+      sendErrorMsg("Blockchain Error " + e, res)
+    }
+    else if(!data){
+      sendErrorMsg("Error - Data not found for some reason?", res)
+    }
+    else{
+      res.status(200)
+      res.send(data)
+    }
+  })
 })
-
 
 // headers: token
 // body: username
@@ -258,24 +255,22 @@ router.post('/slack/exchange', function(req, res){
   if(!pointsToExchange){sendErrorMsg("Missing pointsToExchange", res)}
   if(!username || !pointsToExchange){return}
 
-    chaincode.invoke.exchange([username, pointsToExchange], function(e, data){
-        console.log("e : " + e);
-        console.log("JSON.stringify(e) : " + JSON.stringify(e));
-        console.log("JSON.stringify(data) : " + JSON.stringify(data));
-      if(e){
-        sendErrorMsg("Blockchain Error " + e, res)
-      }
-      else if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-      }
-      else{
-        res.status(200)
-        res.send(data)
-      }
-    })
+  chaincode.invoke.exchange([username, pointsToExchange], function(e, data){
+    console.log("e : " + e);
+    console.log("JSON.stringify(e) : " + JSON.stringify(e));
+    console.log("JSON.stringify(data) : " + JSON.stringify(data));
+    if(e){
+      sendErrorMsg("Blockchain Error " + e, res)
+    }
+    else if(!data){
+      sendErrorMsg("Error - Data not found for some reason?", res)
+    }
+    else{
+      res.status(200)
+      res.send(data)
+    }
+  })
 })
-
-
 
 // headers: token
 // body: senderId, receiverId, amount, reason
@@ -358,7 +353,6 @@ router.get('/trade-statistics', function(req, res){
   })
 })
 
-
 // Product history - gets the products the user purchased
 // headers: username, token, startDateTime (optional), endDateTime (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
@@ -374,12 +368,6 @@ router.get('/product-history', function(req, res){
   })
 })
 
-
-
-
-
-
-
 var trade = function(senderId, amount, receiverId, reason, client, res){
   chaincode.query.read([senderId], function(e, data){
     if(e){
@@ -390,7 +378,6 @@ var trade = function(senderId, amount, receiverId, reason, client, res){
       sendErrorMsg("Error - Sender user doesnt exist", res)
       return
     }
-
 
     data = JSON.parse(data);
 
@@ -425,10 +412,10 @@ var trade = function(senderId, amount, receiverId, reason, client, res){
           sendErrorMsg("Error - Data not found for some reason?", res)
         }
         else{
-            slackUtil.sendTradeNotificationToSlack(res, senderId, receiverId, amount, reason, client, function(res, err, result, body){
-                res.status(200)
-                res.send(data)
-            });
+          slackUtil.sendTradeNotificationToSlack(res, senderId, receiverId, amount, reason, client, function(res, err, result, body){
+            res.status(200)
+            res.send(data)
+          });
         }
       })
 
@@ -436,8 +423,6 @@ var trade = function(senderId, amount, receiverId, reason, client, res){
 
   })
 }
-
-
 
 // headers: token
 // body: senderId, receiverId, amount, reason
@@ -457,13 +442,11 @@ router.post('/trade', function(req, res){
   if(!reason){sendErrorMsg("Missing reason", res)}
   if(!senderId || !receiverId || !amount || !reason){return}
 
-    UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
-      trade(senderId, amount, receiverId, reason, 'APP', res);
-    })
+  UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
+    trade(senderId, amount, receiverId, reason, 'APP', res);
+  })
 
 })
-//TODO: create API endpoint for just adding a photo to an account
-
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
@@ -477,7 +460,6 @@ router.get('/createAccount', function(req, res){
     sendErrorMsg("Missing data", res)
     return
   }
-
 
   chaincode.query.read([username], function(e, data){
     if(e){
@@ -493,9 +475,9 @@ router.get('/createAccount', function(req, res){
       if(e){
         sendErrorMsg("Error " + e, res)
       }
-      // else if(!data){
-      //   sendErrorMsg("Error - Data not found for some reason?", res)
-      // }
+      else if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+      }
       else{
         var token = UsersManager.createToken(username)
         data.token = token
@@ -509,9 +491,6 @@ router.get('/createAccount', function(req, res){
 
   })
 })
-
-
-
 
 // body: username, image_64
 // response: JSON
@@ -540,40 +519,14 @@ router.post('/update_image', function(req, res){
         res.status(200)
         res.send({success: 'TRUE', image_64:image_64, username:username})
     })
-
-
-
-    // chaincode.invoke.createAccount([username], function(e, data){
-    //   if(e){
-    //     sendErrorMsg("Error " + e, res)
-    //   }
-    //   // else if(!data){
-    //   //   sendErrorMsg("Error - Data not found for some reason?", res)
-    //   // }
-    //   else{
-    //     var token = UsersManager.createToken(username)
-    //     data.token = token
-    //     dbUtil.addUser(username, fullname, image_64, res)
-    //     UsersManager.addFullname(username, fullname, image_64)
-    //
-    //     res.status(200)
-    //     res.send({token:token,fullname:fullname,image_64:image_64,username:username})
-    //   }
-    // })
-
   })
 })
-
-
-
-
-
 
 // headers: token
 // body: username
 // response: JSON
-router.post('/logout', function(req, res){
-  var username = req.body.username
+router.get('/logout', function(req, res){
+  var username = req.get.username
   var token = req.get("token")
 
   if(!username || !token){
@@ -583,9 +536,6 @@ router.post('/logout', function(req, res){
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
     req.logout()
-    req.session.destroy(function(error){
-      res.redirect('https://givebackauth-nerycy5fdu-cs19.iam.ibmcloud.com/idaas/mtfim/sps/idaas/logout')
-    })
   })
 })
 
@@ -705,9 +655,6 @@ router.post('/exchange', function(req, res){
   })
 })
 
-
-
-
 // headers: token
 // body: username
 // response: JSON
@@ -725,18 +672,18 @@ router.post('/deposit', function(req, res){
     return
   }
 
-    chaincode.invoke.deposit([username, coins], function(e, data){
-      if(e){
-        sendErrorMsg("Blockchain Error " + e, res)
-      }
-      else if(!data){
-        sendErrorMsg("Error - Data not found for some reason?", res)
-      }
-      else{
-        res.status(200)
-        res.send(data)
-      }
-    })
+  chaincode.invoke.deposit([username, coins], function(e, data){
+    if(e){
+      sendErrorMsg("Blockchain Error " + e, res)
+    }
+    else if(!data){
+      sendErrorMsg("Error - Data not found for some reason?", res)
+    }
+    else{
+      res.status(200)
+      res.send(data)
+    }
+  })
 })
 
 // headers: token
