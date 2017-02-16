@@ -534,9 +534,11 @@ router.post('/update_image', function(req, res){
       return
     }
 
+
     dbUtil.update_image(username, image_64, res, function(rows){
-      res.status(200)
-      res.send({success: 'TRUE', image_64:image_64, username:username})
+        UsersManager.updateImageInMap(username, image_64);
+        res.status(200)
+        res.send({success: 'TRUE', image_64:image_64, username:username})
     })
 
 
