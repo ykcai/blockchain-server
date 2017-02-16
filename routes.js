@@ -653,13 +653,19 @@ router.post('/exchange', function(req, res){
 // response: JSON
 router.post('/deposit', function(req, res){
   var username = req.body.username
+  var coins = req.body.coins
+
   if(!username){
-    sendErrorMsg("Missing data", res)
+    sendErrorMsg("Missing username", res)
     return
   }
 
-  UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
-    chaincode.invoke.deposit([username, "100"], function(e, data){
+  if(!coins){
+    sendErrorMsg("Missing coins", res)
+    return
+  }
+
+    chaincode.invoke.deposit([username, coins], function(e, data){
       if(e){
         sendErrorMsg("Blockchain Error " + e, res)
       }
@@ -671,7 +677,6 @@ router.post('/deposit', function(req, res){
         res.send(data)
       }
     })
-  })
 })
 
 // headers: token
