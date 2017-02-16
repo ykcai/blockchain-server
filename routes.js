@@ -647,6 +647,33 @@ router.post('/exchange', function(req, res){
   })
 })
 
+
+// headers: token
+// body: username
+// response: JSON
+router.post('/deposit', function(req, res){
+  var username = req.body.username
+  if(!username){
+    sendErrorMsg("Missing data", res)
+    return
+  }
+
+  UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
+    chaincode.invoke.deposit([username, "100"], function(e, data){
+      if(e){
+        sendErrorMsg("Blockchain Error " + e, res)
+      }
+      else if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+      }
+      else{
+        res.status(200)
+        res.send(data)
+      }
+    })
+  })
+})
+
 // headers: token
 // body: prodID, username
 // response: JSON
