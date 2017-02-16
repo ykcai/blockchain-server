@@ -558,6 +558,7 @@ router.get('/product/:prodID', function(req, res){
   })
 })
 
+
 // response: JSON
 router.get('/all-products',ensureAuthenticated, function(req, res){
   var products = []
