@@ -335,14 +335,11 @@ router.get('/trade-history', function(req, res){
 
     console.log("got to 201");
 
-
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     console.log("got to 301");
 
     data.forEach(function(o){
-        console.log("the data: " + JSON.stringify(o));
-
       if(o.type === "set_user"){
           console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
           console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
