@@ -150,6 +150,9 @@ router.post('/slack/exchange', function(req, res){
   if(!username || !pointsToExchange){return}
 
     chaincode.invoke.exchange([username, pointsToExchange], function(e, data){
+        console.log("e : " + e);
+        console.log("JSON.stringify(e) : " + JSON.stringify(e));
+        console.log("JSON.stringify(data) : " + JSON.stringify(data));
       if(e){
         sendErrorMsg("Blockchain Error " + e, res)
       }
