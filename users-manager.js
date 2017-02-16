@@ -77,7 +77,7 @@ module.exports.logout = function(username, token, res, err, callback){
     }
   }
   else{
-    err("User not even logged in", res)
+    callback()
   }
 }
 

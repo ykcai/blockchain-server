@@ -523,8 +523,8 @@ router.post('/update_image', function(req, res){
 // headers: token
 // body: username
 // response: JSON
-router.post('/logout', function(req, res){
-  var username = req.body.username
+router.get('/logout', function(req, res){
+  var username = req.get.username
   var token = req.get("token")
 
   if(!username || !token){
@@ -534,9 +534,6 @@ router.post('/logout', function(req, res){
 
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
     req.logout()
-    req.session.destroy(function(error){
-      res.redirect('https://givebackauth-nerycy5fdu-cs19.iam.ibmcloud.com/idaas/mtfim/sps/idaas/logout')
-    })
   })
 })
 
