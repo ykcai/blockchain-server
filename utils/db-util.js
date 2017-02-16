@@ -128,3 +128,22 @@ module.exports.getAllUsers = function(fullname, res, onSuccess){
     onSuccess(rows)
   })
 }
+
+
+module.exports.update_image = function(username, image_64, res, onSuccess){
+
+  var query = "UPDATE users SET image_64 ='" + image_64 + "' WHERE id = '" + username + "'"
+
+  connection.query(query, function(err, rows){
+    if (err){
+      console.log('DB Error updating image', err)
+      if(res){
+        res.status(400)
+        res.send({msg: "DB error"})
+      }
+      return
+    }
+
+    onSuccess(rows)
+  })
+}

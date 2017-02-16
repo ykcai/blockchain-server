@@ -511,6 +511,62 @@ router.get('/createAccount', function(req, res){
 })
 
 
+
+
+// body: username, image_64
+// response: JSON
+router.post('/update_image', function(req, res){
+
+  var username = req.body.username
+  var image_64 = req.body.image_64
+
+  if(!username){sendErrorMsg("Missing username", res)}
+  if(!image_64){sendErrorMsg("Missing image_64", res)}
+  if(!username || !image_64){return}
+
+  chaincode.query.read([username], function(e, data){
+    if(e){
+      sendErrorMsg("Blockchain error, check logs", res)
+      return
+    }
+    if(!data){
+      sendErrorMsg("User does not exists", res)
+      return
+    }
+
+    dbUtil.update_image(username, image_64, res, function(rows){
+      res.status(200)
+      res.send({success: 'TRUE', image_64:image_64, username:username})
+    })
+
+
+
+    // chaincode.invoke.createAccount([username], function(e, data){
+    //   if(e){
+    //     sendErrorMsg("Error " + e, res)
+    //   }
+    //   // else if(!data){
+    //   //   sendErrorMsg("Error - Data not found for some reason?", res)
+    //   // }
+    //   else{
+    //     var token = UsersManager.createToken(username)
+    //     data.token = token
+    //     dbUtil.addUser(username, fullname, image_64, res)
+    //     UsersManager.addFullname(username, fullname, image_64)
+    //
+    //     res.status(200)
+    //     res.send({token:token,fullname:fullname,image_64:image_64,username:username})
+    //   }
+    // })
+
+  })
+})
+
+
+
+
+
+
 // headers: token
 // body: username
 // response: JSON
