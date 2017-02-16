@@ -303,30 +303,57 @@ router.get('/trade-history', function(req, res){
     // filter by user
     var data = transactionUtil.getTransactionHistory(req.get("username"))
     var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+    console.log("got to 101");
 
     var query = req.get("query")
+
+    console.log("got to 101");
+
     if(query){
+        console.log("got to 102");
+
       query = query.toLowerCase()
       var arrContains = function(arr, str){
+          console.log("got to 103");
+
         var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+        console.log("got to 104");
 
         if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
         arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+            console.log("got to 105");
+
           return true
         }
+        console.log("got to 106");
+
         return false
+
       }
     }
 
+    console.log("got to 201");
+
+
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
+    console.log("got to 301");
+
     data.forEach(function(o){
+        console.log("the data: " + JSON.stringify(o));
+
       if(o.type === "set_user"){
+          console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
+          console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
+
         o.sender = UsersManager.getFullname(o.transaction[1])
         o.receiver = UsersManager.getFullname(o.transaction[3])
       }
     })
+
+    console.log("got to 401 data :" + data);
+
 
     res.status(200)
     res.send({data: data})
@@ -345,7 +372,6 @@ router.get('/trade-statistics', function(req, res){
     data.forEach(function(key, value){
       value.user = UsersManager.getFullname(key)
       data.set(key, value);
-      console.log('user found')
     })
 
     res.status(200)
@@ -515,6 +541,7 @@ router.post('/update_image', function(req, res){
 
 
     dbUtil.update_image(username, image_64, res, function(rows){
+        console.log("comming back here");
         UsersManager.updateImageInMap(username, image_64);
         res.status(200)
         res.send({success: 'TRUE', image_64:image_64, username:username})
