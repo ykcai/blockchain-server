@@ -69,6 +69,7 @@ router.get('/auth/sso/callback',function(req,res,next) {
     failureRedirect: '/auth/failure',
   })(req,res,next);
 });
+
 router.get('/auth/failure', function(req, res) {
   //res.send({check:"This doesn't work"})
   sendErrorMsg('W3id login failed',res);
@@ -307,7 +308,7 @@ router.get('/trade-history', function(req, res){
 
     var query = req.get("query")
 
-    console.log("got to 101");
+    console.log("got to 1001");
 
     if(query){
         console.log("got to 102");
@@ -341,11 +342,11 @@ router.get('/trade-history', function(req, res){
     console.log("got to 301");
 
     data.forEach(function(o){
-        console.log("the data: " + JSON.stringify(o));
+        // console.log("the data: " + JSON.stringify(o));
 
       if(o.type === "set_user"){
-          console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
-          console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
+        //   console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
+        //   console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
 
         o.sender = UsersManager.getFullname(o.transaction[1])
         o.receiver = UsersManager.getFullname(o.transaction[3])
