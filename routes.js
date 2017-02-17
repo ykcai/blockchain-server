@@ -61,9 +61,9 @@ function(iss, sub, profile, accessToken, refreshToken, params, done) {
 )
 
 passport.use(Strategy);
-
+var redirect_url
 router.get('/auth/sso/callback',function(req,res,next) {
-  var redirect_url=req.session.originalUrl
+  redirect_url=req.session.originalUrl
   passport.authenticate('openidconnect', {
     successRedirect: '/auth/success',
     failureRedirect: '/auth/failure',
@@ -75,7 +75,7 @@ router.get('/auth/failure', function(req, res) {
 });
 //webview closes at this api URL
 router.get('/auth/success',function(req,res){
-  res.send(req.user.emailaddress)
+  res.redirect(redirect_url)
 })
 router.get('/auth/checkAuth',function(req,res){
   //console.log(req)
@@ -84,6 +84,11 @@ router.get('/auth/checkAuth',function(req,res){
   }else{
     res.send({status:false})
   }
+})
+
+router.get('/slack/signup',ensureAuthenticated,function(req,res){
+  http.get('/createAccount',function(res){})
+  res.send({username:req.user.emailaddress})
 })
 
 router.get('/auth/user',function(req,res){
