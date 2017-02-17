@@ -101,7 +101,7 @@ router.get('/slack/signup',ensureAuthenticated,function(req,res){
       res.send({username:req.user.emailaddress, status:"New"})
     }
     res.send({username:req.user.emailaddress, status:"Exists"})
-  }
+  })
 })
 
 router.get('/auth/user',function(req,res){
