@@ -52,3 +52,20 @@ module.exports.sendTradeNotificationToSlack = function(res, sender, reciever, am
         cb(res, err, result, body);
     });
 }
+
+
+module.exports.sendSignUpNotificationToSlack = function(res, username, error, cb){
+    const URL = SERVER_URL + "/usersignup_notification?username=" + username + "&error=" + error ;
+
+    request({
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        uri: URL,
+        body: null,
+        method: 'POST'
+    }, (err, result, body) => {
+        cb(res, err, result, body);
+    });
+
+}

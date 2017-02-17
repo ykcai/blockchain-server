@@ -89,20 +89,31 @@ router.get('/auth/checkAuth',function(req,res){
   }
 })
 
-router.get('/slack/signup',ensureAuthenticated,function(req,res){
-  var username = req.user.emailaddress
-  chaincode.query.read([username], function(e, data){
-    if(e){
-      console.log(e)
-      sendErrorMsg("Blockchain error", res)
-      return
-    }
-    if(!data){
-      http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){})
-      res.send({username:req.user.emailaddress, status:"New"})
-    }
-    res.send({username:req.user.emailaddress, status:"Exists"})
+router.get('/slack/signup', ensureAuthenticated, function(req,res){
+    console.log("start of /slack/signup route");
+
+  http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){
+      var err = null;
+      var username = null;
+
+      if(req && req.user && req.user.emailaddress){
+          username = req.user.emailaddress;
+          res.redirect('http://slackbot-test-server.mybluemix.net/');
+      }else{
+          err = 'EMAIL_NOT_FOUND' ;
+          res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
+      }
+      console.log("err: " + err);
+      console.log("username: " + username);
+
+      slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
+          console.log("Slack Sign Up err: " +  JSON.stringify(err));
+          console.log("Slack Sign Up result: " + result);
+          console.log("Slack Sign Up body: " + JSON.stringify(body));
+      });
   })
+  console.log("end of /slack/signup route");
+  // res.send({username:req.user.emailaddress})
 })
 
 router.get('/auth/user',function(req,res){
