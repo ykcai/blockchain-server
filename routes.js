@@ -90,8 +90,19 @@ router.get('/auth/checkAuth',function(req,res){
 })
 
 router.get('/slack/signup',ensureAuthenticated,function(req,res){
-  http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){})
-  res.send({username:req.user.emailaddress})
+  var username = req.user.emailaddress
+  chaincode.query.read([username], function(e, data){
+    if(e){
+      console.log(e)
+      sendErrorMsg("Blockchain error", res)
+      return
+    }
+    if(!data){
+      http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){})
+      res.send({username:req.user.emailaddress, status:"New"})
+    }
+    res.send({username:req.user.emailaddress, status:"Exists"})
+  })
 })
 
 router.get('/auth/user',function(req,res){
