@@ -93,15 +93,15 @@ module.exports.comparePasswords = function(password, hash){
   return bcrypt.compareSync(password, hash)
 }
 
-module.exports.updateImageInMap = function(username, image_64){
-    if(!username || !image_64) {return}
-    if(!usernameFullnameMap[username]) {return}
-
-
-    console.log("usernameFullnameMap: " + JSON.stringify(usernameFullnameMap));
-    console.log("updateing image in map");
-
-    usernameFullnameMap[username].image_64 = image_64
-    console.log("new image in map: " + usernameFullnameMap[username].image_64);
-
-}
+// module.exports.updateImageInMap = function(username, image_64){
+//     if(!username || !image_64) {return}
+//     if(!usernameFullnameMap[username]) {return}
+//
+//
+//     console.log("usernameFullnameMap: " + JSON.stringify(usernameFullnameMap));
+//     console.log("updateing image in map");
+//
+//     usernameFullnameMap[username].image_64 = image_64
+//     console.log("new image in map: " + usernameFullnameMap[username].image_64);
+//
+// }

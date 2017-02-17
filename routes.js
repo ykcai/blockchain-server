@@ -61,9 +61,9 @@ function(iss, sub, profile, accessToken, refreshToken, params, done) {
 )
 
 passport.use(Strategy);
-
+var redirect_url
 router.get('/auth/sso/callback',function(req,res,next) {
-  var redirect_url=req.session.originalUrl
+  redirect_url=req.session.originalUrl
   passport.authenticate('openidconnect', {
     successRedirect: '/auth/success',
     failureRedirect: '/auth/failure',
@@ -76,7 +76,7 @@ router.get('/auth/failure', function(req, res) {
 });
 //webview closes at this api URL
 router.get('/auth/success',function(req,res){
-  res.send(req.user.emailaddress)
+  res.redirect(redirect_url)
 })
 router.get('/auth/checkAuth',function(req,res){
   //console.log(req)
@@ -85,6 +85,11 @@ router.get('/auth/checkAuth',function(req,res){
   }else{
     res.send({status:false})
   }
+})
+
+router.get('/slack/signup',ensureAuthenticated,function(req,res){
+  http.get('/createAccount',function(res){})
+  res.send({username:req.user.emailaddress})
 })
 
 router.get('/auth/user',function(req,res){
@@ -336,14 +341,11 @@ router.get('/trade-history', function(req, res){
 
     console.log("got to 201");
 
-
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     console.log("got to 301");
 
     data.forEach(function(o){
-        // console.log("the data: " + JSON.stringify(o));
-
       if(o.type === "set_user"){
         //   console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
         //   console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
@@ -543,7 +545,7 @@ router.post('/update_image', function(req, res){
 
     dbUtil.update_image(username, image_64, res, function(rows){
         console.log("comming back here");
-        UsersManager.updateImageInMap(username, image_64);
+        // UsersManager.updateImageInMap(username, image_64);
         res.status(200)
         res.send({success: 'TRUE', image_64:image_64, username:username})
     })
