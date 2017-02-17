@@ -8,6 +8,7 @@ var transactionUtil = require('./utils/transaction-util')
 var passport        = require('passport')
 var cookieParser    = require('cookie-parser');
 var session         = require('express-session');
+var http            = require('http');
 var slackUtil = require('./utils/slack-util')
 var ibc
 var chaincode
@@ -75,6 +76,7 @@ router.get('/auth/failure', function(req, res) {
 });
 //webview closes at this api URL
 router.get('/auth/success',function(req,res){
+  console.log('login success'+redirect_url)
   res.redirect(redirect_url)
 })
 router.get('/auth/checkAuth',function(req,res){
@@ -87,7 +89,7 @@ router.get('/auth/checkAuth',function(req,res){
 })
 
 router.get('/slack/signup',ensureAuthenticated,function(req,res){
-  http.get('/createAccount',function(res){})
+  http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){})
   res.send({username:req.user.emailaddress})
 })
 
@@ -119,7 +121,7 @@ router.get('/auth/authenticate', passport.authenticate('openidconnect', {}));
 
 function ensureAuthenticated(req, res, next) {
   if(!req.isAuthenticated()) {
-    //req.session.originalUrl = req.originalUrl;
+    req.session.originalUrl = req.originalUrl;
     res.redirect('/auth/authenticate');
   } else {
     return next();
