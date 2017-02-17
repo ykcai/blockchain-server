@@ -13,6 +13,9 @@ var slackUtil = require('./utils/slack-util')
 var ibc
 var chaincode
 
+const THIS_SERVER = "http://michcai-blockedchain.mybluemix.net";
+const SLACK_SERVER = "http://slackbot-test-server.mybluemix.net";
+
 dbUtil.getAllUsers(null, null, function(rows){
   UsersManager.setup(rows)
 })
@@ -90,9 +93,11 @@ router.get('/auth/checkAuth',function(req,res){
 })
 
 router.get('/slack/signup', ensureAuthenticated, function(req,res){
-    console.log("start of /slack/signup route");
+    console.log("hehehehehehhe 1111 start of /slack/signup route");
+    console.log("req.user.emailaddress: " + req.user.emailaddress);
+    console.log("req.user.cn: " + req.user.cn);
 
-  http.request('http://michcai-blockedchain.mybluemix.net/createAccount',function(res){
+  http.request('http://michcai-blockedchain.mybluemix.net/createAccount?username=' + req.user.emailaddress +  '&cn=' + req.user.cn ,function(res){
       var err = null;
       var username = null;
 
@@ -504,17 +509,24 @@ router.post('/trade', function(req, res){
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
 router.get('/createAccount', function(req, res){
+    console.log("create account A01");
 
   //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
   var username = req.user.emailaddress
   var fullname = req.user.cn
   var image_64 = ''
+  console.log("create account A02");
+
   if(!username || !fullname){
     sendErrorMsg("Missing data", res)
     return
   }
+  console.log("create account A03");
+
 
   chaincode.query.read([username], function(e, data){
+      console.log("create account B01");
+
     if(e){
       sendErrorMsg("Blockchain error, check logs", res)
       return
@@ -523,8 +535,12 @@ router.get('/createAccount', function(req, res){
       sendErrorMsg("User already exists", res)
       return
     }
+    console.log("create account B02");
+
 
     chaincode.invoke.createAccount([username], function(e, data){
+        console.log("create account C01");
+
       if(e){
         sendErrorMsg("Error " + e, res)
       }
@@ -532,10 +548,16 @@ router.get('/createAccount', function(req, res){
         sendErrorMsg("Error - Data not found for some reason?", res)
       }
       else{
+          console.log("create account C02");
+
         var token = UsersManager.createToken(username)
         data.token = token
+        console.log("create account C03");
+
         dbUtil.addUser(username, fullname, image_64, res)
         UsersManager.addFullname(username, fullname, image_64)
+        console.log("create account C04");
+        console.log("create account C05 {token:token,fullname:fullname,image_64:image_64,username:username}: " + {token:token,fullname:fullname,image_64:image_64,username:username});
 
         res.status(200)
         res.send({token:token,fullname:fullname,image_64:image_64,username:username})
