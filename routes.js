@@ -328,6 +328,32 @@ router.post('/slack/trade', function(req, res){
   trade(senderId, amount, receiverId, reason, 'SLACK', res);
 })
 
+
+
+/*
+Also sorted by timestamp.
+Last one in the array is the latest transaction
+*/
+router.get('/slack/trade-history', function(req, res){
+
+    // filter by user
+    var data = transactionUtil.getTransactionHistory(req.get("username"))
+
+    data.forEach(function(o){
+      if(o.type === "set_user"){
+        o.sender = UsersManager.getFullname(o.transaction[1])
+        o.receiver = UsersManager.getFullname(o.transaction[3])
+      }
+    })
+
+    res.status(200)
+    res.json(data)
+})
+
+
+
+
+
 // Trade history - gets the trades the user did & allowances
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
