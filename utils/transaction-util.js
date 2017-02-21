@@ -49,6 +49,7 @@ module.exports.getTransactionHistoryStatistics = function() {
       myMap.set(obj.transaction[1], jsonValue);
   });
 
+
   //sets reciever points
   transactionHistory.forEach(function(obj) {
       if(myMap.has(obj.transaction[3])){ //already exists, incriment values
@@ -57,6 +58,7 @@ module.exports.getTransactionHistoryStatistics = function() {
       }
       myMap.set(obj.transaction[3], jsonValue);
   });
+
   return myMap;
 }
 

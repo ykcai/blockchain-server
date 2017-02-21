@@ -207,7 +207,9 @@ var sendErrorMsg = function(str, res){
 }
 
 var makeMap = function(map) {
+
   const out = Object.create(null)
+
   map.forEach((value, key) => {
     if (value instanceof Map) {
       out[key] = map_to_object(value)
@@ -216,6 +218,7 @@ var makeMap = function(map) {
       out[key] = value
     }
   })
+
   return out
 }
 
@@ -438,16 +441,14 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
+      var data = transactionUtil.getTransactionHistoryStatistics();
+      var jsonMapped = makeMap(data);
+      Object.keys(jsonMapped).forEach((email) => {
+          jsonMapped[email] = UsersManager.getFullname(email)
+      })
 
-    var data = transactionUtil.getTransactionHistoryStatistics();
-
-    data.forEach(function(key, value){
-      value.user = UsersManager.getFullname(key)
-      data.set(key, value);
-    })
-
-    res.status(200)
-    res.json({data: makeMap(data)})
+      res.status(200)
+      res.json({data: jsonMapped})
   })
 })
 
@@ -524,14 +525,13 @@ router.get('/trade-history', function(req, res){
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
-
-    data.forEach(function(key, value){
-      value.user = UsersManager.getFullname(key)
-      data.set(key, value);
+    var jsonMapped = makeMap(data);
+    Object.keys(jsonMapped).forEach((email) => {
+        jsonMapped[email] = UsersManager.getFullname(email)
     })
 
     res.status(200)
-    res.json({data: makeMap(data)})
+    res.json({data: jsonMapped})
 })
 
 // Product history - gets the products the user purchased
