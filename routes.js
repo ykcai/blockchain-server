@@ -98,8 +98,8 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
     console.log("req.user.cn: " + req.user.cn);
 
     var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
-    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (err, res, body) => {
-        console.log("err: " + err);
+    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res, body) => {
+        console.log("err: " + error);
         console.log("res: " + res);
         console.log("body: " + body);
 
@@ -124,12 +124,12 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
 
     })
 
-
-    slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
-        console.log("Slack Sign Up err: " +  JSON.stringify(err));
-        console.log("Slack Sign Up result: " + result);
-        console.log("Slack Sign Up body: " + JSON.stringify(body));
-    });
+    //
+    // slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
+    //     console.log("Slack Sign Up err: " +  JSON.stringify(err));
+    //     console.log("Slack Sign Up result: " + result);
+    //     console.log("Slack Sign Up body: " + JSON.stringify(body));
+    // });
 
   // http.request('http://michcai-blockedchain.mybluemix.net/createAccount?username=' + req.user.emailaddress +  '&cn=' + req.user.cn ,function(res){
   //     var err = null;
