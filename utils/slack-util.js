@@ -54,8 +54,8 @@ module.exports.sendTradeNotificationToSlack = function(res, sender, reciever, am
 }
 
 
-module.exports.sendSignUpNotificationToSlack = function(res, username, error, cb){
-    const URL = SERVER_URL + "/usersignup_notification?username=" + username + "&error=" + error ;
+module.exports.sendSignUpNotificationToSlack = function(res, username, msg, cb){
+    const URL = SERVER_URL + "/usersignup_notification?username=" + username + "&msg=" + msg ;
 
     request({
         headers: {
