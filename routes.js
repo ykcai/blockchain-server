@@ -955,4 +955,19 @@ router.post('/purchase-product', function(req, res){
   })
 })
 
+
+//headers: token
+//body: username, feedback
+router.post('/submitFeedback',function(req,res){
+  var username = req.body.username
+  var feedback = req.body.feedback
+
+  if (!username){
+    sendErrorMsg("Missing Username",res)
+  }
+  if (!feedback){
+    sendErrorMsg("missing Feedback",res)
+  }
+})
+
 module.exports.router = router
