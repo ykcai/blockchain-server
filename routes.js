@@ -104,13 +104,18 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
         console.log("body: " + JSON.stringify(body));
 
         var msg = null;
+        body = (body) ? JSON.parse(body) : null;
 
         if(body && body.token && body.fullname){
             console.log("successfully created a new account");
             msg = "SUCCESSFULLY_AUTHENTICATED"
             res.redirect('http://slackbot-test-server.mybluemix.net/');
-        }else if(body == "User already exists"){
+        }else if(body && body.msg == "User already exists"){
             msg = "ALREADY_EXIST"
+            res.redirect('http://slackbot-test-server.mybluemix.net/');
+        }else if(body && body.msg){
+            msg = body.msg;
+            res.redirect('http://slackbot-test-server.mybluemix.net/');
         }else{
             console.log("COULD NOT found email and username  and stuff after response 1");
             msg = 'SOMETHING_WENT_WRONG' ;
