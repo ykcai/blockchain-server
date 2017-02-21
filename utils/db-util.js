@@ -148,8 +148,8 @@ module.exports.update_image = function(username, image_64, res, onSuccess){
   })
 }
 
-module.exports.submitFeedback = function (username,feedback) {
-  var query = 'INSERT INTO feedback (user_id,feedback) values ("'+username+'", "'+feedback+'")'
+module.exports.submitFeedback = function (username,feedback,starCount) {
+  var query = 'INSERT INTO feedback (user_id,feedback,rating) values ("'+username+'", "'+feedback+'", "'+starCount+'")'
 
   connection.query(query,function(err, addFeedback){
     if (err){

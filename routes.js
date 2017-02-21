@@ -933,20 +933,24 @@ router.post('/purchase-product', function(req, res){
 
 
 //headers: token
-//body: username, feedback
+//body: username, feedback, starCount
 router.post('/submitFeedback',function(req,res){
   var username = req.body.username
   var feedback = req.body.feedback
+  var starCount = req.body.starCount
 
   if (!username){
     sendErrorMsg("Missing Username",res)
   }
   if (!feedback){
-    sendErrorMsg("missing Feedback",res)
+    sendErrorMsg("Missing Feedback",res)
+  }
+  if (!starCount){
+    sendErrorMsg("Missing Rating", ews)
   }
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
-    dbUtil.submitFeedback(username,feedback)
+    dbUtil.submitFeedback(username,feedback,starCount)
   })
 
 })
