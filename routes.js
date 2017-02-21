@@ -98,7 +98,7 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
     console.log("req.user.cn: " + req.user.cn);
 
     var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
-    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res, body) => {
+    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res3, body) => {
         console.log("err: " + error);
         console.log("res: " + res);
         console.log("body: " + body);
@@ -113,7 +113,7 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
             errMSG = 'NO_ERROR' ;
 
             username = req.user.emailaddress;
-            // res.redirect('http://slackbot-test-server.mybluemix.net/');
+            res.redirect('http://slackbot-test-server.mybluemix.net/');
         }else{
             console.log("COULD NOT found email and username  and stuff after response 1");
 
