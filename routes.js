@@ -444,7 +444,7 @@ router.get('/trade-statistics', function(req, res){
       var data = transactionUtil.getTransactionHistoryStatistics();
       var jsonMapped = makeMap(data);
       Object.keys(jsonMapped).forEach((email) => {
-          jsonMapped[email] = UsersManager.getFullname(email)
+          jsonMapped[email].user = UsersManager.getFullname(email)
       })
 
       res.status(200)
@@ -527,7 +527,7 @@ router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
     var jsonMapped = makeMap(data);
     Object.keys(jsonMapped).forEach((email) => {
-        jsonMapped[email] = UsersManager.getFullname(email)
+        jsonMapped[email].user = UsersManager.getFullname(email)
     })
 
     res.status(200)
