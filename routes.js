@@ -975,10 +975,13 @@ router.get('/managerCheck',function(req,res){
 
   dbUtil.checkManager(username, function(rows){
     if (rows[0].manager){
+      res.status(200)
       res.send({manager:true})
+    }else{
+      res.status(200)
+      res.send({manager:false})
     }
   })
-  res.send({manager:false})
 })
 
 module.exports.router = router
