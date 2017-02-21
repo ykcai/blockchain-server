@@ -951,6 +951,7 @@ router.post('/submitFeedback',function(req,res){
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
     dbUtil.submitFeedback(username,feedback,starCount)
+    res.send(200)
   })
 
 })
