@@ -955,5 +955,16 @@ router.post('/submitFeedback',function(req,res){
   })
 
 })
+//headers: username
+router.get('/managerCheck',function(req,res){
+  var username = req.get("username")
+
+  dbUtil.checkManager(username, function(rows){
+    if (rows[0].manager){
+      res.send({manager:true})
+    }
+  })
+  res.send({manager:false})
+})
 
 module.exports.router = router
