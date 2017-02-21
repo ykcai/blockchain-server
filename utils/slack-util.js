@@ -69,3 +69,5 @@ module.exports.sendSignUpNotificationToSlack = function(res, username, error, cb
     });
 
 }
+
+module.exports.executePostAPIcall = executePostAPIcall;

@@ -97,26 +97,60 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
     console.log("req.user.emailaddress: " + req.user.emailaddress);
     console.log("req.user.cn: " + req.user.cn);
 
-  http.request('http://michcai-blockedchain.mybluemix.net/createAccount?username=' + req.user.emailaddress +  '&cn=' + req.user.cn ,function(res){
-      var err = null;
-      var username = null;
+    var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
+    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.body.cn}, null, (err, res, body) => {
+        console.log("err: " + err);
+        console.log("res: " + res);
+        console.log("body: " + body);
 
-      if(req && req.user && req.user.emailaddress){
-          username = req.user.emailaddress;
-          res.redirect('http://slackbot-test-server.mybluemix.net/');
-      }else{
-          err = 'EMAIL_NOT_FOUND' ;
-          res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
-      }
-      console.log("err: " + err);
-      console.log("username: " + username);
+        var err = null;
+        var username = null;
 
-      slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
-          console.log("Slack Sign Up err: " +  JSON.stringify(err));
-          console.log("Slack Sign Up result: " + result);
-          console.log("Slack Sign Up body: " + JSON.stringify(body));
-      });
-  })
+        console.log("after response 1");
+
+        if(req && req.user && req.user.emailaddress && req.user.cn){
+            console.log("found email and username  and stuff after response 1");
+
+            username = req.user.emailaddress;
+            res.redirect('http://slackbot-test-server.mybluemix.net/');
+        }else{
+            console.log("COULD NOT found email and username  and stuff after response 1");
+
+            err = 'EMAIL_NOT_FOUND' ;
+            res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
+        }
+        console.log("End of reponse callback");
+        console.log("username: " + username);
+
+    })
+
+
+    slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
+        console.log("Slack Sign Up err: " +  JSON.stringify(err));
+        console.log("Slack Sign Up result: " + result);
+        console.log("Slack Sign Up body: " + JSON.stringify(body));
+    });
+
+  // http.request('http://michcai-blockedchain.mybluemix.net/createAccount?username=' + req.user.emailaddress +  '&cn=' + req.user.cn ,function(res){
+  //     var err = null;
+  //     var username = null;
+  //
+  //     if(req && req.user && req.user.emailaddress){
+  //         username = req.user.emailaddress;
+  //         res.redirect('http://slackbot-test-server.mybluemix.net/');
+  //     }else{
+  //         err = 'EMAIL_NOT_FOUND' ;
+  //         res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
+  //     }
+  //     console.log("err: " + err);
+  //     console.log("username: " + username);
+  //
+  //     slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, err, function(res, err, result, body){
+  //         console.log("Slack Sign Up err: " +  JSON.stringify(err));
+  //         console.log("Slack Sign Up result: " + result);
+  //         console.log("Slack Sign Up body: " + JSON.stringify(body));
+  //     });
+  // })
   console.log("end of /slack/signup route");
   // res.send({username:req.user.emailaddress})
 })
@@ -349,6 +383,77 @@ router.get('/slack/trade-history', function(req, res){
     res.status(200)
     res.json(data)
 })
+
+
+
+
+
+
+// body: username, password, fullname, image_64 (optional)
+// response: JSON
+router.post('/slack/createAccount', function(req, res){
+    console.log("create account A01");
+
+  //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
+  var username = req.body.emailaddress
+  var fullname = req.body.cn
+  var image_64 = ''
+  console.log("create account A02");
+
+  if(!username){sendErrorMsg("Missing username", res)}
+  if(!fullname){sendErrorMsg("Missing fullname", res)}
+  if(!username || !fullname){
+    return
+  }
+
+  console.log("create account A03");
+
+
+  chaincode.query.read([username], function(e, data){
+      console.log("create account B01");
+
+    if(e){
+      sendErrorMsg("Blockchain error, check logs", res)
+      return
+    }
+    if(data){
+      sendErrorMsg("User already exists", res)
+      return
+    }
+    console.log("create account B02");
+
+
+    chaincode.invoke.createAccount([username], function(e, data){
+        console.log("create account C01");
+
+      if(e){
+        sendErrorMsg("Error " + e, res)
+      }
+      else if(!data){
+        sendErrorMsg("Error - Data not found for some reason?", res)
+      }
+      else{
+          console.log("create account C02");
+
+        var token = UsersManager.createToken(username)
+        data.token = token
+        console.log("create account C03");
+
+        dbUtil.addUser(username, fullname, image_64, res)
+        UsersManager.addFullname(username, fullname, image_64)
+        console.log("create account C04");
+        console.log("create account C05 {token:token,fullname:fullname,image_64:image_64,username:username}: " + {token:token,fullname:fullname,image_64:image_64,username:username});
+
+        res.status(200)
+        res.send({token:token,fullname:fullname,image_64:image_64,username:username})
+      }
+    })
+
+  })
+})
+
+
+
 
 
 
