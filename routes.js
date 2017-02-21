@@ -931,4 +931,23 @@ router.post('/purchase-product', function(req, res){
   })
 })
 
+
+//headers: token
+//body: username, feedback
+router.post('/submitFeedback',function(req,res){
+  var username = req.body.username
+  var feedback = req.body.feedback
+
+  if (!username){
+    sendErrorMsg("Missing Username",res)
+  }
+  if (!feedback){
+    sendErrorMsg("missing Feedback",res)
+  }
+  
+  UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
+    dbUtil.submitFeedback(username,feedback)
+  }
+})
+
 module.exports.router = router
