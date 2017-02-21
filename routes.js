@@ -968,6 +968,10 @@ router.post('/submitFeedback',function(req,res){
   if (!feedback){
     sendErrorMsg("missing Feedback",res)
   }
+  
+  UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
+    dbUtil.submitFeedback(username,feedback)
+  }
 })
 
 module.exports.router = router

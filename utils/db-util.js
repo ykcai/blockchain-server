@@ -147,3 +147,16 @@ module.exports.update_image = function(username, image_64, res, onSuccess){
     onSuccess(rows)
   })
 }
+
+module.exports.submitFeedback = function (username,feedback) {
+  var query = 'INSERT INTO feedback (user_id,feedback) values ("'+username+'", "'+feedback+'")'
+
+  connection.query(query,function(err, addFeedback){
+    if (err){
+      console.log('DB Error inserting feedback ',err)
+      res.status(400)
+      res.send({msg: "DB error, inserting"})
+      return
+    }
+  })
+};
