@@ -151,7 +151,7 @@ router.get('/auth/user',function(req,res){
 
     dbUtil.getUser(username, res, function(rows){
       res.status(200)
-      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username})
+      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username, isManager: rows[0].manager})
     })
   })
 })
@@ -426,7 +426,7 @@ router.post('/slack/createAccount', function(req, res){
         console.log("create account C05 {token:token,fullname:fullname,image_64:image_64,username:username}: " + {token:token,fullname:fullname,image_64:image_64,username:username});
 
         res.status(200)
-        res.send({token:token,fullname:fullname,image_64:image_64,username:username})
+        res.send({token:token,fullname:fullname,image_64:image_64,username:username,isManager:false})
       }
     })
 
@@ -968,6 +968,20 @@ router.post('/submitFeedback',function(req,res){
     res.send(200)
   })
 
+})
+//headers: username
+router.get('/managerCheck',function(req,res){
+  var username = req.get("username")
+
+  dbUtil.checkManager(username, function(rows){
+    if (rows[0].manager){
+      res.status(200)
+      res.send({manager:true})
+    }else{
+      res.status(200)
+      res.send({manager:false})
+    }
+  })
 })
 
 module.exports.router = router
