@@ -432,7 +432,24 @@ router.post('/slack/createAccount', function(req, res){
 
 
 
+// Trade history - gets the trades the user did & allowances
+// headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
+// DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
+// response: JSON
+router.get('/trade-statistics', function(req, res){
+  UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
+    var data = transactionUtil.getTransactionHistoryStatistics();
+
+    data.forEach(function(key, value){
+      value.user = UsersManager.getFullname(key)
+      data.set(key, value);
+    })
+
+    res.status(200)
+    res.json({data: makeMap(data)})
+  })
+})
 
 
 
@@ -505,9 +522,7 @@ router.get('/trade-history', function(req, res){
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
-router.get('/trade-statistics', function(req, res){
-  UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-
+router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
 
     data.forEach(function(key, value){
@@ -517,7 +532,6 @@ router.get('/trade-statistics', function(req, res){
 
     res.status(200)
     res.json({data: makeMap(data)})
-  })
 })
 
 // Product history - gets the products the user purchased
