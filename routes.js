@@ -924,6 +924,7 @@ router.post('/submitFeedback',function(req,res){
     })
   })
 })
+
 //headers: username
 router.get('/managerCheck',function(req,res){
   var username = req.get("username")
@@ -937,6 +938,10 @@ router.get('/managerCheck',function(req,res){
       res.send({manager:false})
     }
   })
+})
+
+router.get('/tip_reasons', function(req,res){
+  dbUtil.getTipReasons(res);
 })
 
 module.exports.router = router
