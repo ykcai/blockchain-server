@@ -635,6 +635,7 @@ router.post('/trade', function(req, res){
 
   if(!senderId){sendErrorMsg("Missing senderId", res)}
   if(!receiverId){sendErrorMsg("Missing receiverId", res)}
+  if(senderId == receiverId){sendErrorMsg("Failed to make Transaction - Sender must be different than Receiver", res)}
   if(!amount){sendErrorMsg("Missing amount", res)}
   if(!reason){sendErrorMsg("Missing reason", res)}
   if(!senderId || !receiverId || !amount || !reason){return}
