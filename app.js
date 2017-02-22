@@ -58,7 +58,7 @@ var options = 	{
 		git_url: 'http://gopkg.in/ykcai/blockchain-code.v2/chaincode',		//GO get http url
 	}
 		//hashed cc name from prev deployment, comment me out to always deploy, uncomment me when its already deployed to skip deploying again
-		//deployed_name: '16e655c0fce6a9882896d3d6d11f7dcd4f45027fd4764004440ff1e61340910a9d67685c4bb723272a497f3cf428e6cf6b009618612220e1471e03b6c0aa76cb'
+		deployed_name: '47eb79c33d12d28730bb2ef67578169ef3391072119b64e18e6f61407242c429ea7071ddaedddff0a58f8b36e32a29db0660e15d4dfb66108c07401d4cc4162e'
 }
 
 if(process.env.VCAP_SERVICES){
