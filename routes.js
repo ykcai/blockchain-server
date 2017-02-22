@@ -580,7 +580,7 @@ router.get('/product-history', function(req, res){
   })
 })
 
-var trade = function(senderId, amount, receiverId, reason, client, res){
+var trade = function(senderId, amount, receiverId, reason, hours, client, res){
   chaincode.query.read([senderId], function(e, data){
     if(e){
       sendErrorMsg("Blockchain Error " + e, res)
@@ -615,7 +615,7 @@ var trade = function(senderId, amount, receiverId, reason, client, res){
         return
       }
 
-      chaincode.invoke.set_user([senderId, amount, receiverId, reason], function(e, data){
+      chaincode.invoke.set_user([senderId, amount, receiverId, reason, hours], function(e, data){
         if(e){
           sendErrorMsg("Blockchain Error " + e, res)
           return
@@ -644,6 +644,7 @@ router.post('/trade', function(req, res){
   var receiverId = req.body.receiverId
   var amount = req.body.amount
   var reason = req.body.reason
+  var hours = req.body.hours
 
   var client = null;
   if(req.body.client) {client = req.body.client}
@@ -656,7 +657,7 @@ router.post('/trade', function(req, res){
   if(!senderId || !receiverId || !amount || !reason){return}
 
   UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
-    trade(senderId, amount, receiverId, reason, 'APP', res);
+    trade(senderId, amount, receiverId, reason, hours, 'APP', res);
   })
 
 })
