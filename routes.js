@@ -534,6 +534,11 @@ router.get('/slack/trade-statistics', function(req, res){
         jsonMapped.email.user = UsersManager.getFullname(email)
     })
 
+
+    Object.keys(jsonMapped).forEach( (email) => {
+        console.log(email + "  -->  " + JSON.stringify(jsonMapped[email]) );
+    })
+
     res.status(200)
     res.json({data: jsonMapped})
 })
