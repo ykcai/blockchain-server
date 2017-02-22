@@ -525,22 +525,44 @@ router.get('/trade-history', function(req, res){
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
+//
+//     console.log("data: " + JSON.stringify(data));
     var jsonMapped = makeMap(data);
+//
+//
+//
+//     //2D Arr
+//     // [ email | email1 | email2 ]
+//     // [ JSONobj |  JSONobj | JSONobj]
+//     var arr = [];
+//
+//
+//     console.log("jsonMapped: " + JSON.stringify(jsonMapped, null, 4));
+    Object.keys(jsonMapped).forEach((email, i) => {
 
-    console.log("jsonMapped: " + JSON.stringify(jsonMapped, null, 4));
-    Object.keys(jsonMapped).forEach((email) => {
-        console.log("jsonMapped.email: " + JSON.stringify(jsonMapped.email, null, 4));
-        console.log("jsonMapped[" + email + "].user = " + JSON.stringify(UsersManager.getFullname(email))) ;
-        jsonMapped.email.user = UsersManager.getFullname(email)
+        var obj = jsonMapped[email];
+        obj.user = UsersManager.getFullname(email);
+
+        // console.log("em " + email + " =-=> " + JSON.stringify(obj));
+        // arr.push([email, obj]);
+
+        // jsonMapped[email] = obj;
+        // console.log("MAPPED:  " + email + " =-=> " + JSON.stringify(jsonMapped[email]));
+
+        // console.log("jsonMapped[" + email + "].user = " + JSON.stringify(UsersManager.getFullname(email))) ;
+        jsonMapped[email].user = UsersManager.getFullname(email)
     })
 
-
-    Object.keys(jsonMapped).forEach( (email) => {
-        console.log(email + "  -->  " + JSON.stringify(jsonMapped[email]) );
-    })
-
-    res.status(200)
     res.json({data: jsonMapped})
+
+
+// console.log("//////////////////////////");
+//     // Object.keys(jsonMapped).forEach( (email) => {
+//     //     console.log(email + "  -->  " + JSON.stringify(jsonMapped[email]) );
+//     // })
+//
+//     res.status(200)
+//     res.json({data: arr})
 })
 
 // Product history - gets the products the user purchased

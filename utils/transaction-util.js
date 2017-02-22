@@ -30,6 +30,58 @@ module.exports.getProductHistory = function(username){
   })
 }
 
+
+
+
+
+module.exports.getTransactionHistoryStatistics2 = function() {
+    //2D Arr
+    // [ email | email1 | email2 ]
+    // [ {pointsReceived:p, pointsSent:p} |  etc | etc]
+
+console.log("transactionHistory: " + transactionHistory);
+    var arr = [];
+
+    transactionHistory.forEach(function(obj) {
+        var jsonValue = {};
+
+        if(getIfEmailExists(arr, obj.transaction[1])){
+            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
+            jsonValue.pointsSent += parseInt(obj.transaction[2])
+        }else{
+
+            jsonValue = {
+                pointsSent: parseInt(obj.transaction[2]),
+                pointsReceived: 0,
+                user: null
+            }
+
+        }
+        arr.push(
+            [obj.transaction[1], jsonValue]
+        );
+    })
+
+
+    transactionHistory.forEach(function(obj) {
+        var jsonValue = {};
+
+        if(getIfEmailExists(arr, obj.transaction[3])){
+            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
+            jsonValue.pointsSent += parseInt(obj.transaction[2])
+
+        }
+        arr.push(
+            [obj.transaction[3], jsonValue]
+        );
+    })
+
+    return arr;
+}
+
+
+
+
 module.exports.getTransactionHistoryStatistics = function() {
   let myMap = new Map();
   var jsonValue = {};
@@ -103,4 +155,19 @@ module.exports.addTransaction = function(transaction, callback){
 
 var formatPayload = function(str){
   return str.replace(/[^\x0A|\x20|\x2D-\x7F]/g, "").split("\n")
+}
+
+
+var getIndexOfEmail = function(arr, email){
+    arr.forEach(function(ObjArr, i) {
+        if(ObjArr[0] == email){return i;}
+    })
+    return false;
+}
+
+var getIfEmailExists = function(arr, email1){
+    arr.forEach(function(ObjArr, i) {
+        if(ObjArr[0] == email){return true;}
+    })
+    return false;
 }

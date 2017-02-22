@@ -30,6 +30,7 @@ module.exports.addFullname = function(username, fullname, image_64){
 }
 
 module.exports.getFullname = function(username){
+    // console.log("6 " + username + " ===>>>> " + JSON.stringify(usernameFullnameMap[username]));
   return usernameFullnameMap[username]
 }
 
