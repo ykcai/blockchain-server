@@ -914,7 +914,7 @@ router.post('/submitFeedback',function(req,res){
   }
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
-    dbUtil.submitFeedback(username,feedback,starCount, (err) => {
+    dbUtil.submitFeedback(username,feedback,starCount,(err) => {
         if(err){
             res.status(400)
             res.send({msg: err})
