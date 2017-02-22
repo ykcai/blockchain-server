@@ -526,8 +526,12 @@ router.get('/trade-history', function(req, res){
 router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
     var jsonMapped = makeMap(data);
+
+    console.log("jsonMapped: " + JSON.stringify(jsonMapped, null, 4));
     Object.keys(jsonMapped).forEach((email) => {
-        jsonMapped[email].user = UsersManager.getFullname(email)
+        console.log("jsonMapped.email: " + JSON.stringify(jsonMapped.email, null, 4));
+        console.log("jsonMapped[" + email + "].user = " + JSON.stringify(UsersManager.getFullname(email))) ;
+        jsonMapped.email.user = UsersManager.getFullname(email)
     })
 
     res.status(200)
@@ -964,8 +968,14 @@ router.post('/submitFeedback',function(req,res){
   }
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
-    dbUtil.submitFeedback(username,feedback,starCount)
-    res.send(200)
+    dbUtil.submitFeedback(username,feedback,starCount, (err) => {
+        if(err){
+            res.status(400)
+            res.send({msg: err})
+        }else{
+            res.send(200)
+        }
+    })
   })
 
 })
