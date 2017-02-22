@@ -441,14 +441,22 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-      var data = transactionUtil.getTransactionHistoryStatistics();
-      var jsonMapped = makeMap(data);
-      Object.keys(jsonMapped).forEach((email) => {
-          jsonMapped[email].user = UsersManager.getFullname(email)
+      var data = transactionUtil.getTransactionHistoryStatistics2();
+      data.forEach( function(obj, i){
+          var email = obj[0]
+          var jsonObj = obj[1]
+          console.log(email + " ==> " + UsersManager.getFullname(email));
+          jsonObj.user = UsersManager.getFullname(email);
+          data[i][1] = jsonObj;
       })
 
-      res.status(200)
-      res.json({data: jsonMapped})
+      var mapJSON = {}
+      data.forEach( function(obj, i){
+          mapJSON[obj[0]] = obj[1]
+      })
+
+      res.json({data: mapJSON})
+
   })
 })
 
@@ -524,45 +532,22 @@ router.get('/trade-history', function(req, res){
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
-    var data = transactionUtil.getTransactionHistoryStatistics();
-//
-//     console.log("data: " + JSON.stringify(data));
-    var jsonMapped = makeMap(data);
-//
-//
-//
-//     //2D Arr
-//     // [ email | email1 | email2 ]
-//     // [ JSONobj |  JSONobj | JSONobj]
-//     var arr = [];
-//
-//
-//     console.log("jsonMapped: " + JSON.stringify(jsonMapped, null, 4));
-    Object.keys(jsonMapped).forEach((email, i) => {
-
-        var obj = jsonMapped[email];
-        obj.user = UsersManager.getFullname(email);
-
-        // console.log("em " + email + " =-=> " + JSON.stringify(obj));
-        // arr.push([email, obj]);
-
-        // jsonMapped[email] = obj;
-        // console.log("MAPPED:  " + email + " =-=> " + JSON.stringify(jsonMapped[email]));
-
-        // console.log("jsonMapped[" + email + "].user = " + JSON.stringify(UsersManager.getFullname(email))) ;
-        jsonMapped[email].user = UsersManager.getFullname(email)
+    var data = transactionUtil.getTransactionHistoryStatistics2();
+    data.forEach( function(obj, i){
+        var email = obj[0]
+        var jsonObj = obj[1]
+        console.log(email + " ==> " + UsersManager.getFullname(email));
+        jsonObj.user = UsersManager.getFullname(email);
+        data[i][1] = jsonObj;
     })
 
-    res.json({data: jsonMapped})
+    var mapJSON = {}
+    data.forEach( function(obj, i){
+        mapJSON[obj[0]] = obj[1]
+    })
 
+    res.json({data: mapJSON})
 
-// console.log("//////////////////////////");
-//     // Object.keys(jsonMapped).forEach( (email) => {
-//     //     console.log(email + "  -->  " + JSON.stringify(jsonMapped[email]) );
-//     // })
-//
-//     res.status(200)
-//     res.json({data: arr})
 })
 
 // Product history - gets the products the user purchased
