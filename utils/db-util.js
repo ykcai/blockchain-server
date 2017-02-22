@@ -161,16 +161,3 @@ module.exports.submitFeedback = function (username,feedback,starCount,res, cb) {
       }
   })
 };
-
-// module.exports.checkManager = function (username, onSuccess) {
-//   var query = 'SELECT manager FROM users WHERE id = "'+username+'"'
-//   connection.query(query,function(err,rows){
-//     if (err){
-//       console.log('DB Error checking manager ',err)
-//       res.status(400)
-//       res.send({msg: "DB error, checking manager"})
-//       return
-//     }
-//     onSuccess(rows)
-//   })
-// };

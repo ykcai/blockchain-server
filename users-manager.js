@@ -7,7 +7,6 @@ var usernameFullnameMap = {} //TODO: prob a better way
 
 var salt = bcrypt.genSaltSync(10)
 
-
 module.exports.isIBM = function(username){
   var regex = /\S+@\S+\.ibm.com/
   return regex.test(username)
@@ -94,15 +93,9 @@ module.exports.comparePasswords = function(password, hash){
   return bcrypt.compareSync(password, hash)
 }
 
-// module.exports.updateImageInMap = function(username, image_64){
-//     if(!username || !image_64) {return}
-//     if(!usernameFullnameMap[username]) {return}
-//
-//
-//     console.log("usernameFullnameMap: " + JSON.stringify(usernameFullnameMap));
-//     console.log("updateing image in map");
-//
-//     usernameFullnameMap[username].image_64 = image_64
-//     console.log("new image in map: " + usernameFullnameMap[username].image_64);
-//
-// }
+module.exports.updateImageInMap = function(username, image_64){
+    if(!username || !image_64) {return}
+    if(!usernameFullnameMap[username]) {return}
+    console.log("updating image in map");
+    usernameFullnameMap[username].image_64 = image_64
+}

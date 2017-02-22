@@ -75,7 +75,6 @@ router.get('/auth/sso/callback',function(req,res,next) {
 });
 
 router.get('/auth/failure', function(req, res) {
-  //res.send({check:"This doesn't work"})
   sendErrorMsg('W3id login failed',res);
 });
 //webview closes at this api URL
@@ -84,7 +83,6 @@ router.get('/auth/success',function(req,res){
   res.redirect(redirect_url)
 })
 router.get('/auth/checkAuth',function(req,res){
-  //console.log(req)
   if (req.isAuthenticated()){
     res.send({status:true})
   }else{
@@ -93,16 +91,9 @@ router.get('/auth/checkAuth',function(req,res){
 })
 
 router.get('/slack/signup', ensureAuthenticated, function(req,res){
-    console.log("start of /slack/signup route");
-    console.log("req.user.emailaddress: " + req.user.emailaddress);
-    console.log("req.user.cn: " + req.user.cn);
 
     var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
     slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res3, body) => {
-        console.log("err: " + JSON.stringify(error));
-        console.log("res: " + res);
-        console.log("body: " + JSON.stringify(body));
-
         var msg = null;
         body = (body) ? JSON.parse(body) : null;
 
@@ -117,32 +108,21 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
             msg = body.msg;
             res.redirect('http://slackbot-test-server.mybluemix.net/');
         }else{
-            console.log("COULD NOT found email and username  and stuff after response 1");
             msg = 'SOMETHING_WENT_WRONG' ;
             res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
         }
-
-        slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, msg, function(res1, err1, result, body){
-            console.log("Slack Sign Up err1: " +  JSON.stringify(err1));
-            console.log("Slack Sign Up result: " + result);
-            console.log("Slack Sign Up body: " + JSON.stringify(body));
-        });
-
-        console.log("End of reponse callback");
+        slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, msg, function(res1, err1, result, body){});
     })
-  console.log("end of /slack/signup route");
 })
 
 router.get('/auth/user',function(req,res){
   var username = req.user.emailaddress
   chaincode.query.read([username], function(e, data){
     if(e){
-      console.log(e)
       sendErrorMsg("Blockchain error", res)
       return
     }
     if(!data){
-      console.log("Error - Data not found for some reason?")
       res.redirect('/createAccount')
       return
     }
@@ -343,8 +323,6 @@ router.post('/slack/trade', function(req, res){
   trade(senderId, amount, receiverId, reason, 'SLACK', res);
 })
 
-
-
 /*
 Also sorted by timestamp.
 Last one in the array is the latest transaction
@@ -360,15 +338,9 @@ router.get('/slack/trade-history', function(req, res){
         o.receiver = UsersManager.getFullname(o.transaction[3])
       }
     })
-
     res.status(200)
     res.json(data)
 })
-
-
-
-
-
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
@@ -389,7 +361,6 @@ router.post('/slack/createAccount', function(req, res){
 
   console.log("create account A03");
 
-
   chaincode.query.read([username], function(e, data){
       console.log("create account B01");
 
@@ -402,7 +373,6 @@ router.post('/slack/createAccount', function(req, res){
       return
     }
     console.log("create account B02");
-
 
     chaincode.invoke.createAccount([username], function(e, data){
         console.log("create account C01");
@@ -433,8 +403,6 @@ router.post('/slack/createAccount', function(req, res){
   })
 })
 
-
-
 // Trade history - gets the trades the user did & allowances
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
@@ -452,9 +420,6 @@ router.get('/trade-statistics', function(req, res){
   })
 })
 
-
-
-
 // Trade history - gets the trades the user did & allowances
 // headers: username, token, startDateTime (optional), endDateTime (optional), query (optional)
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
@@ -465,54 +430,29 @@ router.get('/trade-history', function(req, res){
     // filter by user
     var data = transactionUtil.getTransactionHistory(req.get("username"))
     var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
-    console.log("got to 101");
-
     var query = req.get("query")
-
-    console.log("got to 1001");
-
     if(query){
-        console.log("got to 102");
-
       query = query.toLowerCase()
       var arrContains = function(arr, str){
-          console.log("got to 103");
 
         var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
         var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
-        console.log("got to 104");
 
         if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
         arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-            console.log("got to 105");
-
           return true
         }
-        console.log("got to 106");
-
         return false
-
       }
     }
-
-    console.log("got to 201");
-
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
-
-    console.log("got to 301");
 
     data.forEach(function(o){
       if(o.type === "set_user"){
-        //   console.log("the UsersManager.getFullname(o.transaction[1]): " + UsersManager.getFullname(o.transaction[1]));
-        //   console.log("the UsersManager.getFullname(o.transaction[3]): " + UsersManager.getFullname(o.transaction[3]));
-
         o.sender = UsersManager.getFullname(o.transaction[1])
         o.receiver = UsersManager.getFullname(o.transaction[3])
       }
     })
-
-    console.log("got to 401 data :" + data);
-
 
     res.status(200)
     res.send({data: data})
@@ -525,44 +465,15 @@ router.get('/trade-history', function(req, res){
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
     var data = transactionUtil.getTransactionHistoryStatistics();
-//
-//     console.log("data: " + JSON.stringify(data));
     var jsonMapped = makeMap(data);
-//
-//
-//
-//     //2D Arr
-//     // [ email | email1 | email2 ]
-//     // [ JSONobj |  JSONobj | JSONobj]
-//     var arr = [];
-//
-//
-//     console.log("jsonMapped: " + JSON.stringify(jsonMapped, null, 4));
     Object.keys(jsonMapped).forEach((email, i) => {
 
         var obj = jsonMapped[email];
         obj.user = UsersManager.getFullname(email);
-
-        // console.log("em " + email + " =-=> " + JSON.stringify(obj));
-        // arr.push([email, obj]);
-
-        // jsonMapped[email] = obj;
-        // console.log("MAPPED:  " + email + " =-=> " + JSON.stringify(jsonMapped[email]));
-
-        // console.log("jsonMapped[" + email + "].user = " + JSON.stringify(UsersManager.getFullname(email))) ;
         jsonMapped[email].user = UsersManager.getFullname(email)
     })
 
     res.json({data: jsonMapped})
-
-
-// console.log("//////////////////////////");
-//     // Object.keys(jsonMapped).forEach( (email) => {
-//     //     console.log(email + "  -->  " + JSON.stringify(jsonMapped[email]) );
-//     // })
-//
-//     res.status(200)
-//     res.json({data: arr})
 })
 
 // Product history - gets the products the user purchased
@@ -744,10 +655,9 @@ router.post('/update_image', function(req, res){
       return
     }
 
-
     dbUtil.update_image(username, image_64, res, function(rows){
-        console.log("comming back here");
-        // UsersManager.updateImageInMap(username, image_64);
+        console.log("ROUTES UPDATE IMAGE OF USER");
+        UsersManager.updateImageInMap(username, image_64);
         res.status(200)
         res.send({success: 'TRUE', image_64:image_64, username:username})
     })
@@ -789,7 +699,6 @@ router.get('/product/:prodID', function(req, res){
     })
   })
 })
-
 
 // response: JSON
 router.get('/all-products',ensureAuthenticated, function(req, res){
@@ -978,7 +887,6 @@ router.post('/purchase-product', function(req, res){
   })
 })
 
-
 //headers: token
 //body: username, feedback, starCount
 router.post('/submitFeedback',function(req,res){
@@ -1006,7 +914,6 @@ router.post('/submitFeedback',function(req,res){
         }
     })
   })
-
 })
 //headers: username
 router.get('/managerCheck',function(req,res){

@@ -30,18 +30,8 @@ module.exports.getProductHistory = function(username){
   })
 }
 
-
-
-
-
 module.exports.getTransactionHistoryStatistics2 = function() {
-    //2D Arr
-    // [ email | email1 | email2 ]
-    // [ {pointsReceived:p, pointsSent:p} |  etc | etc]
-
-console.log("transactionHistory: " + transactionHistory);
     var arr = [];
-
     transactionHistory.forEach(function(obj) {
         var jsonValue = {};
 
@@ -55,13 +45,11 @@ console.log("transactionHistory: " + transactionHistory);
                 pointsReceived: 0,
                 user: null
             }
-
         }
         arr.push(
             [obj.transaction[1], jsonValue]
         );
     })
-
 
     transactionHistory.forEach(function(obj) {
         var jsonValue = {};
@@ -69,18 +57,13 @@ console.log("transactionHistory: " + transactionHistory);
         if(getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
-
         }
         arr.push(
             [obj.transaction[3], jsonValue]
         );
     })
-
     return arr;
 }
-
-
-
 
 module.exports.getTransactionHistoryStatistics = function() {
   let myMap = new Map();
@@ -100,7 +83,6 @@ module.exports.getTransactionHistoryStatistics = function() {
       }
       myMap.set(obj.transaction[1], jsonValue);
   });
-
 
   //sets reciever points
   transactionHistory.forEach(function(obj) {

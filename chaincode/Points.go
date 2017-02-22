@@ -376,10 +376,6 @@ func (t *SimpleChaincode) set_user(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Failed to get Receiver")
 	}
 
-  if ( fromAccountAsBytes == toAccountAsBytes) {
-    return nil, errors.New("Failed to make Transaction - Sender must be different than Receiver")
-  }
-
 	fromRes := Account{}
 	json.Unmarshal(fromAccountAsBytes, &fromRes)										//un stringify it aka JSON.parse()
 
