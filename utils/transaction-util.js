@@ -31,36 +31,71 @@ module.exports.getProductHistory = function(username){
 }
 
 module.exports.getTransactionHistoryStatistics2 = function() {
+    //2D Arr
+    // [ email | email1 | email2 ]
+    // [ {pointsReceived:p, pointsSent:p} |  etc | etc]
     var arr = [];
+
     transactionHistory.forEach(function(obj) {
         var jsonValue = {};
 
-        if(getIfEmailExists(arr, obj.transaction[1])){
+        if(getIfEmailExists(arr, obj.transaction[1]) && getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
-        }else{
+            arr[getIndexOfEmail(arr, obj.transaction[1])][1] = jsonValue;
+
+            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
+            jsonValue.pointsReceived += parseInt(obj.transaction[2])
+            arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
+
+        }else if(getIfEmailExists(arr, obj.transaction[1]) &&  !getIfEmailExists(arr, obj.transaction[3])){
+
+            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
+            jsonValue.pointsSent += parseInt(obj.transaction[2])
+            arr[getIndexOfEmail(arr, obj.transaction[1])][1] = jsonValue;
+
+            jsonValue = {
+                pointsSent: 0,
+                pointsReceived: parseInt(obj.transaction[2]),
+                user: null
+            }
+            arr.push(
+                [obj.transaction[3], jsonValue]
+            );
+
+        }else if(!getIfEmailExists(arr, obj.transaction[1]) &&  getIfEmailExists(arr, obj.transaction[3])){
+
+            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
+            jsonValue.pointsReceived += parseInt(obj.transaction[2])
+            arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
 
             jsonValue = {
                 pointsSent: parseInt(obj.transaction[2]),
                 pointsReceived: 0,
                 user: null
             }
-        }
-        arr.push(
-            [obj.transaction[1], jsonValue]
-        );
-    })
+            arr.push(
+                [obj.transaction[1], jsonValue]
+            );
+        }else{
+            jsonValue = {
+                pointsSent: parseInt(obj.transaction[2]),
+                pointsReceived: 0,
+                user: null
+            }
+            arr.push(
+                [obj.transaction[1], jsonValue]
+            );
 
-    transactionHistory.forEach(function(obj) {
-        var jsonValue = {};
-
-        if(getIfEmailExists(arr, obj.transaction[3])){
-            jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
-            jsonValue.pointsSent += parseInt(obj.transaction[2])
+            jsonValue = {
+                pointsSent: 0,
+                pointsReceived: parseInt(obj.transaction[2]),
+                user: null
+            }
+            arr.push(
+                [obj.transaction[3], jsonValue]
+            );
         }
-        arr.push(
-            [obj.transaction[3], jsonValue]
-        );
     })
     return arr;
 }
@@ -141,13 +176,31 @@ var formatPayload = function(str){
 
 
 var getIndexOfEmail = function(arr, email){
+    var index = false;
     arr.forEach(function(ObjArr, i) {
-        if(ObjArr[0] == email){return i;}
+        if(ObjArr[0] == email){index = i;}
     })
-    return false;
+    return index;
 }
 
-var getIfEmailExists = function(arr, email1){
+var getIfEmailExists = function(arr, email){
+    var returnValue = false;
+
+    arr.forEach(function(ObjArr, i) {
+        // console.log("ObjArr: " + JSON.stringify(ObjArr));
+
+        console.log("does " + ObjArr[0] + " == " + email  + "  ==> " + ((ObjArr[0] == email)) );
+        if(ObjArr[0] == email){
+            // console.log("returning true now");
+            returnValue = true;
+        }
+    })
+
+    // console.log("returning false now");
+    return returnValue;
+}
+
+var changeEmailObjValue = function(arr, email, obj){
     arr.forEach(function(ObjArr, i) {
         if(ObjArr[0] == email){return true;}
     })

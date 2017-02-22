@@ -409,14 +409,22 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-      var data = transactionUtil.getTransactionHistoryStatistics();
-      var jsonMapped = makeMap(data);
-      Object.keys(jsonMapped).forEach((email) => {
-          jsonMapped[email].user = UsersManager.getFullname(email)
+      var data = transactionUtil.getTransactionHistoryStatistics2();
+      data.forEach( function(obj, i){
+          var email = obj[0]
+          var jsonObj = obj[1]
+          console.log(email + " ==> " + UsersManager.getFullname(email));
+          jsonObj.user = UsersManager.getFullname(email);
+          data[i][1] = jsonObj;
       })
 
-      res.status(200)
-      res.json({data: jsonMapped})
+      var mapJSON = {}
+      data.forEach( function(obj, i){
+          mapJSON[obj[0]] = obj[1]
+      })
+
+      res.json({data: mapJSON})
+
   })
 })
 
