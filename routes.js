@@ -899,6 +899,7 @@ router.post('/purchase-product', function(req, res){
 //headers: token
 //body: username, feedback, starCount
 router.post('/submitFeedback',function(req,res){
+  console.log(req.body)
   var username = req.body.username
   var feedback = req.body.feedback
   var starCount = req.body.starCount
