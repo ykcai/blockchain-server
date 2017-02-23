@@ -920,7 +920,7 @@ router.post('/submitFeedback',function(req,res){
             res.send({msg: err})
         }else{
             res.status(200)
-            res.json()
+            res.send({feedback:'success'})
         }
     })
   })
