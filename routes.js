@@ -727,7 +727,7 @@ router.get('/product/:prodID', function(req, res){
 })
 
 // response: JSON
-router.get('/all-products',ensureAuthenticated, function(req, res){
+router.get('/all-products', function(req, res){
   var products = []
   var prodIDs = []
 
@@ -916,6 +916,7 @@ router.post('/purchase-product', function(req, res){
 //headers: token
 //body: username, feedback, starCount
 router.post('/submitFeedback',function(req,res){
+  console.log(req.body)
   var username = req.body.username
   var feedback = req.body.feedback
   var starCount = req.body.starCount
@@ -936,7 +937,8 @@ router.post('/submitFeedback',function(req,res){
             res.status(400)
             res.send({msg: err})
         }else{
-            res.send(200)
+            res.status(200)
+            res.send({feedback:'success'})
         }
     })
   })
