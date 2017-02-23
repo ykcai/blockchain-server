@@ -30,6 +30,10 @@ module.exports.getProductHistory = function(username){
   })
 }
 
+
+
+
+
 module.exports.getTransactionHistoryStatistics2 = function() {
     //2D Arr
     // [ email | email1 | email2 ]
@@ -38,7 +42,6 @@ module.exports.getTransactionHistoryStatistics2 = function() {
 
     transactionHistory.forEach(function(obj) {
         var jsonValue = {};
-
         if(getIfEmailExists(arr, obj.transaction[1]) && getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
@@ -46,10 +49,23 @@ module.exports.getTransactionHistoryStatistics2 = function() {
 
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsReceived += parseInt(obj.transaction[2])
+
+            console.log("=====");
+            console.log("obj.transaction[5]: " + obj.transaction[5]);
+            console.log("obj.transaction[6]: " + obj.transaction[6]);
+            console.log("!isNaN(obj.transaction[5]): " + !isNaN(obj.transaction[5]));
+            console.log("!isNaN(obj.transaction[6]): " + !isNaN(obj.transaction[6]));
+
+            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
+                jsonValue.hours = obj.transaction[5];
+            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
+                jsonValue.hours = obj.transaction[6];
+            }
+
             arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
 
-        }else if(getIfEmailExists(arr, obj.transaction[1]) &&  !getIfEmailExists(arr, obj.transaction[3])){
 
+        }else if(getIfEmailExists(arr, obj.transaction[1]) &&  !getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
             arr[getIndexOfEmail(arr, obj.transaction[1])][1] = jsonValue;
@@ -64,7 +80,6 @@ module.exports.getTransactionHistoryStatistics2 = function() {
             );
 
         }else if(!getIfEmailExists(arr, obj.transaction[1]) &&  getIfEmailExists(arr, obj.transaction[3])){
-
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsReceived += parseInt(obj.transaction[2])
             arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
@@ -74,6 +89,13 @@ module.exports.getTransactionHistoryStatistics2 = function() {
                 pointsReceived: 0,
                 user: null
             }
+            
+            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
+                jsonValue.hours = obj.transaction[5];
+            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
+                jsonValue.hours = obj.transaction[6];
+            }
+
             arr.push(
                 [obj.transaction[1], jsonValue]
             );
@@ -92,6 +114,13 @@ module.exports.getTransactionHistoryStatistics2 = function() {
                 pointsReceived: parseInt(obj.transaction[2]),
                 user: null
             }
+
+            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
+                jsonValue.hours = obj.transaction[5];
+            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
+                jsonValue.hours = obj.transaction[6];
+            }
+
             arr.push(
                 [obj.transaction[3], jsonValue]
             );
@@ -99,6 +128,9 @@ module.exports.getTransactionHistoryStatistics2 = function() {
     })
     return arr;
 }
+
+
+
 
 module.exports.getTransactionHistoryStatistics = function() {
   let myMap = new Map();
@@ -118,6 +150,7 @@ module.exports.getTransactionHistoryStatistics = function() {
       }
       myMap.set(obj.transaction[1], jsonValue);
   });
+
 
   //sets reciever points
   transactionHistory.forEach(function(obj) {
@@ -189,7 +222,7 @@ var getIfEmailExists = function(arr, email){
     arr.forEach(function(ObjArr, i) {
         // console.log("ObjArr: " + JSON.stringify(ObjArr));
 
-        console.log("does " + ObjArr[0] + " == " + email  + "  ==> " + ((ObjArr[0] == email)) );
+        // console.log("does " + ObjArr[0] + " == " + email  + "  ==> " + ((ObjArr[0] == email)) );
         if(ObjArr[0] == email){
             // console.log("returning true now");
             returnValue = true;

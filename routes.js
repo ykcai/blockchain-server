@@ -473,16 +473,22 @@ router.get('/trade-history', function(req, res){
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
-    var data = transactionUtil.getTransactionHistoryStatistics();
-    var jsonMapped = makeMap(data);
-    Object.keys(jsonMapped).forEach((email, i) => {
-
-        var obj = jsonMapped[email];
-        obj.user = UsersManager.getFullname(email);
-        jsonMapped[email].user = UsersManager.getFullname(email)
+    var data = transactionUtil.getTransactionHistoryStatistics2();
+    data.forEach( function(obj, i){
+        var email = obj[0]
+        var jsonObj = obj[1]
+        console.log(email + " ==> " + UsersManager.getFullname(email));
+        jsonObj.user = UsersManager.getFullname(email);
+        data[i][1] = jsonObj;
     })
 
-    res.json({data: jsonMapped})
+    var mapJSON = {}
+    data.forEach( function(obj, i){
+        mapJSON[obj[0]] = obj[1]
+    })
+
+    res.json({data: mapJSON})
+
 })
 
 // Product history - gets the products the user purchased
@@ -500,7 +506,9 @@ router.get('/product-history', function(req, res){
   })
 })
 
+
 var trade = function(senderId, amount, receiverId, reason, hours, client, res){
+
   chaincode.query.read([senderId], function(e, data){
     if(e){
       sendErrorMsg("Blockchain Error " + e, res)
@@ -534,6 +542,15 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
         sendErrorMsg("Error - Receiver user doesnt exist", res)
         return
       }
+
+
+      console.log("senderId: " + senderId);
+      console.log("amount: " + amount);
+      console.log("receiverId: " + senderId);
+      console.log("reason: " + reason);
+      console.log("hours: " + hours);
+      console.log("client: " + client);
+
 
       chaincode.invoke.set_user([senderId, amount, receiverId, reason, hours], function(e, data){
         if(e){
@@ -910,7 +927,7 @@ router.post('/submitFeedback',function(req,res){
     sendErrorMsg("Missing Feedback",res)
   }
   if (!starCount){
-    sendErrorMsg("Missing Rating", ews)
+    sendErrorMsg("Missing Rating", res)
   }
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
