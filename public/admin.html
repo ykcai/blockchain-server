@@ -4,15 +4,71 @@
   <meta charset="UTF-8">
   <title>GIVEBACK ADMIN</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <link rel="stylesheet" href="/css/admin.css">
+  <script src="/js/admin.js"></script>
 </head>
 <body>
-    <div style="margin-top:5%">
+        <h1 style="margin-top:1%;margin-bottom:4%; text-align:center;" >Administrators Only</h1>
         <img src="img/icon.png" alt="GIVE BACK" style="width:25%;height:20%;">
-        <h1>GIVEBACK WALLET  </h1>
+        <h1 id="main_heading" >GIVEBACK WALLET</h1>
+        <br>
+        <br>
 
-        <h2 style="margin-top:8%">You have signed up successfully </h2>
-    </div>
+        <div style="width: 40%;margin: 0 auto; ">
+            <div style="float:left;width:48%;text-align: center;">
+                <label for="name">Admin Email</label>
+                <input style="margin: auto;" id="username" type="email" value="" name="username">
+            </div>
+            <div style="float:left;width:48%;text-align: center;">
+                <label for="email">Admin Password</label>
+                <input style="margin: auto;"  id="password" type="password" value="" name="password">
+            </div>
+            <br style="clear:both;" />
+        </div>
+
+        <div style="clear:both;">&nbsp;</div>
+        <h3 id="main_heading" style="font-weight: bold;" >Add Coins</h3>
+        <div id="block_div">
+            <div id="radio_div">
+                <input id="add_to_all_users" type="radio" name="adding_coins" value="true" checked> Manager &amp; Users
+                <br>
+                <br>
+                <input id="add_to_managers" type="radio" name="adding_coins" value="true"> Only Managers
+                <br>
+                <br>
+                <input id="add_to_specific_user" type="radio" name="adding_coins" value="true"> A User
+                <br>
+                <br>
+            </div>
+            <div id="user_fields" >
+                  <p style="text-align: center;"># of Coins</p>
+                  <input class="center" type="number" name="num_coins" min="1" >
+                  <br>
+                  <br>
+                  <p style="text-align: center;">Reciever's Email</p>
+                  <input class="center" id="reciever_email" type="email" name="reciever_email"  >
+            </div>
+        </div>
+        <br style="clear:both;" />
+        <button id="submit_button" class="button">Send Coins</button>
+        <br style="clear:both;" />
+        <div id="block_div">
+            <div id="radio_div">
+                <p>Name: <span id="user_name" ></span> </p>
+                <p>Spendings Balance: <span id="user_spendings"></span> </p>
+                <p>Savings Balance: <span id="user_savings"></span> </p>
+
+            </div>
+            <div id="user_fields" >
+                  <p style="text-align: center;">User's Email</p>
+                  <input class="center" id="user_email_get" type="email" name="user_email_get"  >
+                  <br>
+            </div>
+        </div>
+        <br>
+        <button id="get_user" class="button">Get User</button>
 </body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
 </html>
