@@ -34,6 +34,20 @@ module.exports.getProductHistory = function(username){
 
 
 
+
+var addHoursFromExistingFields = function(jsonValue, transaction){
+    if(!jsonValue.hours){
+        jsonValue.hours = 0;
+    }
+    if((transaction[5] && !isNaN(transaction[5]))){
+        jsonValue.hours +=  parseFloat(transaction[5]);
+    }else if(transaction[6] & !isNaN(transaction[6])){
+        jsonValue.hours += parseFloat(transaction[6]);
+    }
+    return jsonValue;
+}
+
+
 module.exports.getTransactionHistoryStatistics2 = function() {
     //2D Arr
     // [ email | email1 | email2 ]
@@ -45,22 +59,12 @@ module.exports.getTransactionHistoryStatistics2 = function() {
         if(getIfEmailExists(arr, obj.transaction[1]) && getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
+
             arr[getIndexOfEmail(arr, obj.transaction[1])][1] = jsonValue;
 
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsReceived += parseInt(obj.transaction[2])
-
-            console.log("=====");
-            console.log("obj.transaction[5]: " + obj.transaction[5]);
-            console.log("obj.transaction[6]: " + obj.transaction[6]);
-            console.log("!isNaN(obj.transaction[5]): " + !isNaN(obj.transaction[5]));
-            console.log("!isNaN(obj.transaction[6]): " + !isNaN(obj.transaction[6]));
-
-            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
-                jsonValue.hours = obj.transaction[5];
-            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
-                jsonValue.hours = obj.transaction[6];
-            }
+            jsonValue = addHoursFromExistingFields(jsonValue, obj.transaction)
 
             arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
 
@@ -82,6 +86,7 @@ module.exports.getTransactionHistoryStatistics2 = function() {
         }else if(!getIfEmailExists(arr, obj.transaction[1]) &&  getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsReceived += parseInt(obj.transaction[2])
+            jsonValue = addHoursFromExistingFields(jsonValue, obj.transaction)
             arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
 
             jsonValue = {
@@ -89,12 +94,8 @@ module.exports.getTransactionHistoryStatistics2 = function() {
                 pointsReceived: 0,
                 user: null
             }
-            
-            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
-                jsonValue.hours = obj.transaction[5];
-            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
-                jsonValue.hours = obj.transaction[6];
-            }
+
+
 
             arr.push(
                 [obj.transaction[1], jsonValue]
@@ -115,11 +116,9 @@ module.exports.getTransactionHistoryStatistics2 = function() {
                 user: null
             }
 
-            if((obj.transaction[5] && !isNaN(obj.transaction[5]))){
-                jsonValue.hours = obj.transaction[5];
-            }else if(obj.transaction[6] & !isNaN(obj.transaction[6])){
-                jsonValue.hours = obj.transaction[6];
-            }
+            jsonValue = addHoursFromExistingFields(jsonValue, obj.transaction)
+
+
 
             arr.push(
                 [obj.transaction[3], jsonValue]
@@ -175,6 +174,8 @@ module.exports.addTransaction = function(transaction, callback){
 
   if(str.indexOf("set_user") > -1){
     blockObj.transaction = formatPayload(str.substr(str.indexOf("set_user")))
+    console.log("blockObj.transaction: " + JSON.stringify(blockObj.transaction, null, 4));
+
     blockObj.type = "set_user"
     transactionHistory.push(blockObj)
     callback(blockObj)
@@ -202,6 +203,8 @@ module.exports.addTransaction = function(transaction, callback){
     callback(blockObj)
   }
 }
+
+
 
 var formatPayload = function(str){
   return str.replace(/[^\x0A|\x20|\x2D-\x7F]/g, "").split("\n")

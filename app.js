@@ -181,5 +181,6 @@ app.use(function(req, res, next) {
 })
 
 app.use('/', routes.router)
+app.use('/', express.static(__dirname + '/public'));
 
 module.exports = app
