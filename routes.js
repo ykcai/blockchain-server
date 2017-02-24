@@ -346,13 +346,11 @@ router.get('/slack/trade-history', function(req, res){
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
 router.post('/slack/createAccount', function(req, res){
-    console.log("create account A01");
 
   //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
   var username = req.body.emailaddress
   var fullname = req.body.cn
   var image_64 = ''
-  console.log("create account A02");
 
   if(!username){sendErrorMsg("Missing username", res)}
   if(!fullname){sendErrorMsg("Missing fullname", res)}
@@ -360,11 +358,7 @@ router.post('/slack/createAccount', function(req, res){
     return
   }
 
-  console.log("create account A03");
-
   chaincode.query.read([username], function(e, data){
-      console.log("create account B01");
-
     if(e){
       sendErrorMsg("Blockchain error, check logs", res)
       return
@@ -373,10 +367,8 @@ router.post('/slack/createAccount', function(req, res){
       sendErrorMsg("User already exists", res)
       return
     }
-    console.log("create account B02");
 
     chaincode.invoke.createAccount([username], function(e, data){
-        console.log("create account C01");
 
       if(e){
         sendErrorMsg("Error " + e, res)
@@ -385,17 +377,11 @@ router.post('/slack/createAccount', function(req, res){
         sendErrorMsg("Error - Data not found for some reason?", res)
       }
       else{
-          console.log("create account C02");
-
         var token = UsersManager.createToken(username)
         data.token = token
-        console.log("create account C03");
 
         dbUtil.addUser(username, fullname, image_64, res)
         UsersManager.addFullname(username, fullname, image_64)
-        console.log("create account C04");
-        console.log("create account C05 {token:token,fullname:fullname,image_64:image_64,username:username}: " + {token:token,fullname:fullname,image_64:image_64,username:username});
-
         res.status(200)
         res.send({token:token,fullname:fullname,image_64:image_64,username:username,isManager:false})
       }
@@ -414,7 +400,6 @@ router.get('/trade-statistics', function(req, res){
       data.forEach( function(obj, i){
           var email = obj[0]
           var jsonObj = obj[1]
-          console.log(email + " ==> " + UsersManager.getFullname(email));
           jsonObj.user = UsersManager.getFullname(email);
           data[i][1] = jsonObj;
       })
@@ -477,7 +462,6 @@ router.get('/slack/trade-statistics', function(req, res){
     data.forEach( function(obj, i){
         var email = obj[0]
         var jsonObj = obj[1]
-        console.log(email + " ==> " + UsersManager.getFullname(email));
         jsonObj.user = UsersManager.getFullname(email);
         data[i][1] = jsonObj;
     })
@@ -543,15 +527,6 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
         return
       }
 
-
-      console.log("senderId: " + senderId);
-      console.log("amount: " + amount);
-      console.log("receiverId: " + senderId);
-      console.log("reason: " + reason);
-      console.log("hours: " + hours);
-      console.log("client: " + client);
-
-
       chaincode.invoke.set_user([senderId, amount, receiverId, reason, hours], function(e, data){
         if(e){
           sendErrorMsg("Blockchain Error " + e, res)
@@ -602,23 +577,19 @@ router.post('/trade', function(req, res){
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
 router.get('/createAccount', function(req, res){
-    console.log("create account A01");
 
   //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
   var username = req.user.emailaddress
   var fullname = req.user.cn
   var image_64 = ''
-  console.log("create account A02");
 
   if(!username || !fullname){
     sendErrorMsg("Missing data", res)
     return
   }
-  console.log("create account A03");
 
 
   chaincode.query.read([username], function(e, data){
-      console.log("create account B01");
 
     if(e){
       sendErrorMsg("Blockchain error, check logs", res)
@@ -628,11 +599,9 @@ router.get('/createAccount', function(req, res){
       sendErrorMsg("User already exists", res)
       return
     }
-    console.log("create account B02");
 
 
     chaincode.invoke.createAccount([username], function(e, data){
-        console.log("create account C01");
 
       if(e){
         sendErrorMsg("Error " + e, res)
@@ -641,16 +610,12 @@ router.get('/createAccount', function(req, res){
         sendErrorMsg("Error - Data not found for some reason?", res)
       }
       else{
-          console.log("create account C02");
 
         var token = UsersManager.createToken(username)
         data.token = token
-        console.log("create account C03");
 
         dbUtil.addUser(username, fullname, image_64, res)
         UsersManager.addFullname(username, fullname, image_64)
-        console.log("create account C04");
-        console.log("create account C05 {token:token,fullname:fullname,image_64:image_64,username:username}: " + {token:token,fullname:fullname,image_64:image_64,username:username});
 
         res.status(200)
         res.send({token:token,fullname:fullname,image_64:image_64,username:username})
@@ -682,7 +647,6 @@ router.post('/update_image', function(req, res){
     }
 
     dbUtil.update_image(username, image_64, res, function(rows){
-        console.log("ROUTES UPDATE IMAGE OF USER");
         UsersManager.updateImageInMap(username, image_64);
         res.status(200)
         res.send({success: 'TRUE', image_64:image_64, username:username})
