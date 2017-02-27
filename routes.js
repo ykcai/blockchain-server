@@ -446,20 +446,43 @@ Last one in the array is the latest transaction
 router.get('/slack/trade-history', function(req, res){
 
     // filter by user
+    console.log("here 1");
     var data = transactionUtil.getTransactionHistory(req.get("username"))
     var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+    console.log("here 3");
+
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+    console.log("here 4");
+
+    var allUserFullnames = [];
 
     data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.sender = UsersManager.getFullname(o.transaction[1])
-        o.receiver = UsersManager.getFullname(o.transaction[3])
-      }
+        if(o.type === "set_user"){
+            allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
+            allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
+        }
     })
+    allUserFullnames = uniq(allUserFullnames);
+    //
+    // data.forEach(function(o){
+    //   if(o.type === "set_user"){
+    //     o.sender = UsersManager.getFullname(o.transaction[1])
+    //     o.receiver = UsersManager.getFullname(o.transaction[3])
+    //   }
+    // })
+    console.log("here 5");
+
     res.status(200)
-    res.json(data)
+    res.json({"fullnames":allUserFullnames, "data":data})
 
 })
+
+var uniq = function(a) {
+    var seen = {};
+    return a.filter(function(item) {
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+}
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
