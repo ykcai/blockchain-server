@@ -30,7 +30,9 @@ img {
     margin-top: 2%;
 
 }
-
+span {
+    font-weight: bold;
+}
 #radio_div {
     float: left;
     width: 49%;

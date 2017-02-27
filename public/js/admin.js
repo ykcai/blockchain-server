@@ -95,9 +95,8 @@ $(document).ready(function() {
                    console.log("data.giveBalance: " + data.giveBalance);
                    console.log("data.pointsBalance: " + data.pointsBalance);
 
-                   $("#user_name").text(data.id);
-                   $("#user_spendings").text(data.giveBalance);
-                   $("#user_savings").text(data.pointsBalance);
+                   $("#user_spendings").text(data.giveBalance + " Coins");
+                   $("#user_savings").text(data.pointsBalance + " Coins");
                }
            }
            , error: function(jqXHR, textStatus, err){
