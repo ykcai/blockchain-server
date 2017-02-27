@@ -438,7 +438,11 @@ router.get('/trade-history', function(req, res){
         }
         return false
       }
+      data = data.filter(function(o){
+              return arrContains(o.transaction, query)
+            })
     }
+
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
@@ -489,7 +493,6 @@ router.get('/product-history', function(req, res){
     res.send({data: data})
   })
 })
-
 
 var trade = function(senderId, amount, receiverId, reason, hours, client, res){
 
@@ -577,8 +580,6 @@ router.post('/trade', function(req, res){
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
 router.get('/createAccount', function(req, res){
-
-  //TODO: pull username, and fullname (fname and lname seperate?) from 'req.user'
   var username = req.user.emailaddress
   var fullname = req.user.cn
   var image_64 = ''
@@ -587,7 +588,6 @@ router.get('/createAccount', function(req, res){
     sendErrorMsg("Missing data", res)
     return
   }
-
 
   chaincode.query.read([username], function(e, data){
 
@@ -599,7 +599,6 @@ router.get('/createAccount', function(req, res){
       sendErrorMsg("User already exists", res)
       return
     }
-
 
     chaincode.invoke.createAccount([username], function(e, data){
 
