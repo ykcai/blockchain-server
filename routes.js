@@ -16,8 +16,8 @@ var chaincode
 const THIS_SERVER = "http://michcai-blockedchain.mybluemix.net";
 const SLACK_SERVER = "http://slackbot-test-server.mybluemix.net";
 
-const ADMIN_USERNAME = "A@c.c"
-const ADMIN_PASSWORD = "B"
+const ADMIN_USERNAME = "mehranna@ca.ibm.com"
+const ADMIN_PASSWORD = "mehran"
 
 
 dbUtil.getAllUsers(null, null, function(rows){
