@@ -792,6 +792,7 @@ router.get('/logout', function(req, res){
   UsersManager.logout(username, token, res, sendErrorMsg, function(){
     req.logout()
     res.status(200)
+    res.send({status : 'true'})
   })
 })
 
