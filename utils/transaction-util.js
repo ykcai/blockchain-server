@@ -48,26 +48,23 @@ var addHoursFromExistingFields = function(jsonValue, transaction){
 }
 
 
-module.exports.getTransactionHistoryStatistics2 = function() {
+module.exports.getTransactionHistoryStatistics2 = function(transHistory) {
     //2D Arr
     // [ email | email1 | email2 ]
     // [ {pointsReceived:p, pointsSent:p} |  etc | etc]
     var arr = [];
 
-    transactionHistory.forEach(function(obj) {
+    transHistory.forEach(function(obj) {
         var jsonValue = {};
         if(getIfEmailExists(arr, obj.transaction[1]) && getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
             jsonValue.pointsSent += parseInt(obj.transaction[2])
-
             arr[getIndexOfEmail(arr, obj.transaction[1])][1] = jsonValue;
 
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[3])][1]
             jsonValue.pointsReceived += parseInt(obj.transaction[2])
             jsonValue = addHoursFromExistingFields(jsonValue, obj.transaction)
-
             arr[getIndexOfEmail(arr, obj.transaction[3])][1] = jsonValue;
-
 
         }else if(getIfEmailExists(arr, obj.transaction[1]) &&  !getIfEmailExists(arr, obj.transaction[3])){
             jsonValue = arr[getIndexOfEmail(arr, obj.transaction[1])][1]
@@ -95,8 +92,6 @@ module.exports.getTransactionHistoryStatistics2 = function() {
                 user: null
             }
 
-
-
             arr.push(
                 [obj.transaction[1], jsonValue]
             );
@@ -117,8 +112,6 @@ module.exports.getTransactionHistoryStatistics2 = function() {
             }
 
             jsonValue = addHoursFromExistingFields(jsonValue, obj.transaction)
-
-
 
             arr.push(
                 [obj.transaction[3], jsonValue]

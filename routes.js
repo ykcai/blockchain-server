@@ -447,6 +447,8 @@ router.get('/slack/trade-history', function(req, res){
 
     // filter by user
     var data = transactionUtil.getTransactionHistory(req.get("username"))
+    var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
       if(o.type === "set_user"){
@@ -456,6 +458,7 @@ router.get('/slack/trade-history', function(req, res){
     })
     res.status(200)
     res.json(data)
+
 })
 
 // body: username, password, fullname, image_64 (optional)
@@ -511,21 +514,24 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-      var data = transactionUtil.getTransactionHistoryStatistics2();
-      data.forEach( function(obj, i){
+      var data = transactionUtil.getAllTransactionHistory()
+      var data2 = transactionUtil.getAllAllowanceHistory()
+      var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+      var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+      history.forEach( function(obj, i){
           var email = obj[0]
           var jsonObj = obj[1]
           jsonObj.user = UsersManager.getFullname(email);
-          data[i][1] = jsonObj;
+          history[i][1] = jsonObj;
       })
 
       var mapJSON = {}
-      data.forEach( function(obj, i){
+      history.forEach( function(obj, i){
           mapJSON[obj[0]] = obj[1]
       })
 
       res.json({data: mapJSON})
-
   })
 })
 
@@ -573,21 +579,24 @@ router.get('/trade-history', function(req, res){
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
-    var data = transactionUtil.getTransactionHistoryStatistics2();
-    data.forEach( function(obj, i){
+    var data = transactionUtil.getAllTransactionHistory()
+    var data2 = transactionUtil.getAllAllowanceHistory()
+    var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+    var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+    history.forEach( function(obj, i){
         var email = obj[0]
         var jsonObj = obj[1]
         jsonObj.user = UsersManager.getFullname(email);
-        data[i][1] = jsonObj;
+        history[i][1] = jsonObj;
     })
 
     var mapJSON = {}
-    data.forEach( function(obj, i){
+    history.forEach( function(obj, i){
         mapJSON[obj[0]] = obj[1]
     })
 
     res.json({data: mapJSON})
-
 })
 
 // Product history - gets the products the user purchased
