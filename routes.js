@@ -781,9 +781,9 @@ router.post('/update_image', function(req, res){
 // body: username
 // response: JSON
 router.get('/logout', function(req, res){
-  var username = req.body.username
+  var username = req.get("username")
   var token = req.get("token")
-
+  console.log("LOGGGGGGOUTTTTTT USERNAME ", username,  "TOKEN ", token)
   if(!username || !token){
     sendErrorMsg("Missing data", res)
     return
