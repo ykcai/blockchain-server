@@ -97,137 +97,137 @@ router.get('/auth/checkAuth',function(req,res){
 
 
 router.post('/admin/send_coins', function(req,res){
-    console.log("in route /Admin/send_coins");
+  console.log("in route /Admin/send_coins");
 
-    var numCoins = req.body.coins
-    var adminEmail = req.body.email
-    var adminpassword = req.body.password
+  var numCoins = req.body.coins
+  var adminEmail = req.body.email
+  var adminpassword = req.body.password
 
-    var toManagersAndUsers = req.body.to_all
-    var toManagersOnly = req.body.to_managers
-    var toUserOnly = req.body.to_user
-    var recieverEmail = req.body.reciever_email
+  var toManagersAndUsers = req.body.to_all
+  var toManagersOnly = req.body.to_managers
+  var toUserOnly = req.body.to_user
+  var recieverEmail = req.body.reciever_email
 
-    var asyncItemsProccessed = 0;
+  var asyncItemsProccessed = 0;
 
 
-    if(!numCoins){res.json({success:false, error:"Missing Number of Coins field"});}
-    if(!adminEmail){res.json({success:false, error:"Missing Email Field"});}
-    if(!adminpassword){res.json({success:false, error:"Missing Password Field"});}
-    if(!toManagersAndUsers){res.json({success:false, error:"Missing toManagersAndUsersfield"});}
-    if(!toManagersOnly){res.json({success:false, error:"Missing toManagersOnly Field"});}
-    if(!toUserOnly){res.json({success:false, error:"Missing toUserOnly Field"});}
-    if(!numCoins || !adminEmail || !adminpassword || !toManagersAndUsers || !toManagersOnly || !toUserOnly){
-        return;
-    }
+  if(!numCoins){res.json({success:false, error:"Missing Number of Coins field"});}
+  if(!adminEmail){res.json({success:false, error:"Missing Email Field"});}
+  if(!adminpassword){res.json({success:false, error:"Missing Password Field"});}
+  if(!toManagersAndUsers){res.json({success:false, error:"Missing toManagersAndUsersfield"});}
+  if(!toManagersOnly){res.json({success:false, error:"Missing toManagersOnly Field"});}
+  if(!toUserOnly){res.json({success:false, error:"Missing toUserOnly Field"});}
+  if(!numCoins || !adminEmail || !adminpassword || !toManagersAndUsers || !toManagersOnly || !toUserOnly){
+    return;
+  }
 
-    if(adminEmail.toUpperCase() != ADMIN_USERNAME.toUpperCase() && adminpassword != ADMIN_PASSWORD){
-        res.json({success:false, error:"Incorrect Admin Username Password"});
-        return;
-    }
+  if(adminEmail.toUpperCase() != ADMIN_USERNAME.toUpperCase() && adminpassword != ADMIN_PASSWORD){
+    res.json({success:false, error:"Incorrect Admin Username Password"});
+    return;
+  }
 
-    console.log("toManagersAndUsers: "+toManagersAndUsers);
-    console.log("toManagersOnly: "+toManagersOnly);
-    console.log("toUserOnly: "+toUserOnly);
+  console.log("toManagersAndUsers: "+toManagersAndUsers);
+  console.log("toManagersOnly: "+toManagersOnly);
+  console.log("toUserOnly: "+toUserOnly);
 
-    if(toManagersAndUsers == 'true'){
-        console.log("toManagersAndUsers");
+  if(toManagersAndUsers == 'true'){
+    console.log("toManagersAndUsers");
 
-        dbUtil.getAllUsersForAdmin((err, rows) => {
-            if(err){
-                res.json({success:false, error:err});
-            }else{
-                rows.forEach((row, i) => {
-                    chaincode.invoke.deposit([row.id, numCoins], function(e, data){
-                      asyncItemsProccessed++;
-                      if(e) {res.json({success:false, error:e});}
-                      else if(!data) {res.json({success:false, error:"User Was Not Found"});}
-                      if(asyncItemsProccessed == rows.length){
-                          res.json({success:true, msg:"Sent Coins to Managers And Users"});
-                      }
-                    })
-                })
+    dbUtil.getAllUsersForAdmin((err, rows) => {
+      if(err){
+        res.json({success:false, error:err});
+      }else{
+        rows.forEach((row, i) => {
+          chaincode.invoke.deposit([row.id, numCoins], function(e, data){
+            asyncItemsProccessed++;
+            if(e) {res.json({success:false, error:e});}
+            else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+            if(asyncItemsProccessed == rows.length){
+              res.json({success:true, msg:"Sent Coins to Managers And Users"});
             }
+          })
         })
-    }else if(toManagersOnly == 'true'){
-        console.log("toManagersOnly");
-        dbUtil.getAllUsersForAdmin((err, rows) => {
-            if(err){
-                res.json({success:false, error:err});
-            }else{
-                rows.forEach((row, i) => {
-                    console.log(" " + row.id + " ==> " + row.manager);
-                    if(row && row.manager == 1){
-                        chaincode.invoke.deposit([row.id, numCoins], function(e, data){
-                            asyncItemsProccessed++;
-                          if(e) {res.json({success:false, error:e});}
-                          else if(!data) {res.json({success:false, error:"User Was Not Found"});}
-                          if(asyncItemsProccessed == rows.length){
-                              res.json({success:true, msg:"Sent Coins to Managers Only"});
-                          }
-                        })
-                    }else{
-                        asyncItemsProccessed++;
-                    }
-                })
-            }
-        })
-    }else if(toUserOnly == 'true'){
-        console.log("toUserOnly");
-        if(!recieverEmail){
-            res.json({success:false, error:"Missing Reciever Email Field"});
-            return;
-        }
-        dbUtil.getAllUsersForAdmin((err, rows) => {
-            var userFound = false;
-            rows.forEach((row, i) => {
-                if(row.id == recieverEmail){
-                    userFound = true;
-                }
+      }
+    })
+  }else if(toManagersOnly == 'true'){
+    console.log("toManagersOnly");
+    dbUtil.getAllUsersForAdmin((err, rows) => {
+      if(err){
+        res.json({success:false, error:err});
+      }else{
+        rows.forEach((row, i) => {
+          console.log(" " + row.id + " ==> " + row.manager);
+          if(row && row.manager == 1){
+            chaincode.invoke.deposit([row.id, numCoins], function(e, data){
+              asyncItemsProccessed++;
+              if(e) {res.json({success:false, error:e});}
+              else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+              if(asyncItemsProccessed == rows.length){
+                res.json({success:true, msg:"Sent Coins to Managers Only"});
+              }
             })
-
-            if(userFound){
-                chaincode.invoke.deposit([recieverEmail, numCoins], function(e, data){
-                  if(e) {res.json({success:false, error:e});}
-                  else if(!data) {res.json({success:false, error:"User Was Not Found"});}
-                  res.json({success:true, msg:"Sent Coins to User"});
-                })
-            }else{
-                res.json({success:false, error:"User Was Not Found"});
-            }
-        });
-    }else{
-        console.log("All False");
-        res.json({success:false, error:"All Intents Were False"});
-        return;
+          }else{
+            asyncItemsProccessed++;
+          }
+        })
+      }
+    })
+  }else if(toUserOnly == 'true'){
+    console.log("toUserOnly");
+    if(!recieverEmail){
+      res.json({success:false, error:"Missing Reciever Email Field"});
+      return;
     }
+    dbUtil.getAllUsersForAdmin((err, rows) => {
+      var userFound = false;
+      rows.forEach((row, i) => {
+        if(row.id == recieverEmail){
+          userFound = true;
+        }
+      })
+
+      if(userFound){
+        chaincode.invoke.deposit([recieverEmail, numCoins], function(e, data){
+          if(e) {res.json({success:false, error:e});}
+          else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+          res.json({success:true, msg:"Sent Coins to User"});
+        })
+      }else{
+        res.json({success:false, error:"User Was Not Found"});
+      }
+    });
+  }else{
+    console.log("All False");
+    res.json({success:false, error:"All Intents Were False"});
+    return;
+  }
 })
 
 
 
 router.get('/slack/signup', ensureAuthenticated, function(req,res){
 
-    var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
-    slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res3, body) => {
-        var msg = null;
-        body = (body) ? JSON.parse(body) : null;
+  var URL = "http://michcai-blockedchain.mybluemix.net/slack/createAccount"
+  slackUtil.executePostAPIcall(URL, {'emailaddress': req.user.emailaddress, 'cn':req.user.cn}, null, (error, res3, body) => {
+    var msg = null;
+    body = (body) ? JSON.parse(body) : null;
 
-        if(body && body.token && body.fullname){
-            console.log("successfully created a new account");
-            msg = "SUCCESSFULLY_AUTHENTICATED"
-            res.redirect('http://slackbot-test-server.mybluemix.net/');
-        }else if(body && body.msg == "User already exists"){
-            msg = "ALREADY_EXIST"
-            res.redirect('http://slackbot-test-server.mybluemix.net/');
-        }else if(body && body.msg){
-            msg = body.msg;
-            res.redirect('http://slackbot-test-server.mybluemix.net/');
-        }else{
-            msg = 'SOMETHING_WENT_WRONG' ;
-            res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
-        }
-        slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, msg, function(res1, err1, result, body){});
-    })
+    if(body && body.token && body.fullname){
+      console.log("successfully created a new account");
+      msg = "SUCCESSFULLY_AUTHENTICATED"
+      res.redirect('http://slackbot-test-server.mybluemix.net/');
+    }else if(body && body.msg == "User already exists"){
+      msg = "ALREADY_EXIST"
+      res.redirect('http://slackbot-test-server.mybluemix.net/');
+    }else if(body && body.msg){
+      msg = body.msg;
+      res.redirect('http://slackbot-test-server.mybluemix.net/');
+    }else{
+      msg = 'SOMETHING_WENT_WRONG' ;
+      res.send({message:'Something Went Wrong With The Slack Registration', error:'EMAIL_NOT_FOUND'})
+    }
+    slackUtil.sendSignUpNotificationToSlack(res, req.user.emailaddress, msg, function(res1, err1, result, body){});
+  })
 })
 
 router.get('/auth/user',function(req,res){
@@ -445,19 +445,19 @@ Last one in the array is the latest transaction
 */
 router.get('/slack/trade-history', function(req, res){
 
-    // filter by user
-    var data = transactionUtil.getTransactionHistory(req.get("username"))
-    var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
-    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+  // filter by user
+  var data = transactionUtil.getTransactionHistory(req.get("username"))
+  var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+  data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
-    data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.sender = UsersManager.getFullname(o.transaction[1])
-        o.receiver = UsersManager.getFullname(o.transaction[3])
-      }
-    })
-    res.status(200)
-    res.json(data)
+  data.forEach(function(o){
+    if(o.type === "set_user"){
+      o.sender = UsersManager.getFullname(o.transaction[1])
+      o.receiver = UsersManager.getFullname(o.transaction[3])
+    }
+  })
+  res.status(200)
+  res.json(data)
 
 })
 
@@ -514,24 +514,24 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-      var data = transactionUtil.getAllTransactionHistory()
-      var data2 = transactionUtil.getAllAllowanceHistory()
-      var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+    var data = transactionUtil.getAllTransactionHistory()
+    var data2 = transactionUtil.getAllAllowanceHistory()
+    var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
-      var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
-      history.forEach( function(obj, i){
-          var email = obj[0]
-          var jsonObj = obj[1]
-          jsonObj.user = UsersManager.getFullname(email);
-          history[i][1] = jsonObj;
-      })
+    var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+    history.forEach( function(obj, i){
+      var email = obj[0]
+      var jsonObj = obj[1]
+      jsonObj.user = UsersManager.getFullname(email);
+      history[i][1] = jsonObj;
+    })
 
-      var mapJSON = {}
-      history.forEach( function(obj, i){
-          mapJSON[obj[0]] = obj[1]
-      })
+    var mapJSON = {}
+    history.forEach( function(obj, i){
+      mapJSON[obj[0]] = obj[1]
+    })
 
-      res.json({data: mapJSON})
+    res.json({data: mapJSON})
   })
 })
 
@@ -560,8 +560,8 @@ router.get('/trade-history', function(req, res){
         return false
       }
       data = data.filter(function(o){
-              return arrContains(o.transaction, query)
-            })
+        return arrContains(o.transaction, query)
+      })
     }
 
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
@@ -583,24 +583,24 @@ router.get('/trade-history', function(req, res){
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
-    var data = transactionUtil.getAllTransactionHistory()
-    var data2 = transactionUtil.getAllAllowanceHistory()
-    var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+  var data = transactionUtil.getAllTransactionHistory()
+  var data2 = transactionUtil.getAllAllowanceHistory()
+  var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
-    var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
-    history.forEach( function(obj, i){
-        var email = obj[0]
-        var jsonObj = obj[1]
-        jsonObj.user = UsersManager.getFullname(email);
-        history[i][1] = jsonObj;
-    })
+  var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+  history.forEach( function(obj, i){
+    var email = obj[0]
+    var jsonObj = obj[1]
+    jsonObj.user = UsersManager.getFullname(email);
+    history[i][1] = jsonObj;
+  })
 
-    var mapJSON = {}
-    history.forEach( function(obj, i){
-        mapJSON[obj[0]] = obj[1]
-    })
+  var mapJSON = {}
+  history.forEach( function(obj, i){
+    mapJSON[obj[0]] = obj[1]
+  })
 
-    res.json({data: mapJSON})
+  res.json({data: mapJSON})
 })
 
 // Product history - gets the products the user purchased
@@ -770,9 +770,9 @@ router.post('/update_image', function(req, res){
     }
 
     dbUtil.update_image(username, image_64, res, function(rows){
-        UsersManager.updateImageInMap(username, image_64);
-        res.status(200)
-        res.send({success: 'TRUE', image_64:image_64, username:username})
+      UsersManager.updateImageInMap(username, image_64);
+      res.status(200)
+      res.send({success: 'TRUE', image_64:image_64, username:username})
     })
   })
 })
@@ -783,7 +783,7 @@ router.post('/update_image', function(req, res){
 router.get('/logout', function(req, res){
   var username = req.get("username")
   var token = req.get("token")
-  console.log("LOGGGGGGOUTTTTTT USERNAME ", username,  "TOKEN ", token)
+
   if(!username || !token){
     sendErrorMsg("Missing data", res)
     return
@@ -1022,13 +1022,13 @@ router.post('/submitFeedback',function(req,res){
 
   UsersManager.checkUserTokenPair(username, req.get("token"), res, sendErrorMsg, function(){
     dbUtil.submitFeedback(username,feedback,starCount,(err) => {
-        if(err){
-            res.status(400)
-            res.send({msg: err})
-        }else{
-            res.status(200)
-            res.send({feedback:'success'})
-        }
+      if(err){
+        res.status(400)
+        res.send({msg: err})
+      }else{
+        res.status(200)
+        res.send({feedback:'success'})
+      }
     })
   })
 })
