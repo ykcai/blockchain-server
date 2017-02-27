@@ -16,6 +16,10 @@ var chaincode
 const THIS_SERVER = "http://michcai-blockedchain.mybluemix.net";
 const SLACK_SERVER = "http://slackbot-test-server.mybluemix.net";
 
+const ADMIN_USERNAME = "mehranna@ca.ibm.com"
+const ADMIN_PASSWORD = "mehran"
+
+
 dbUtil.getAllUsers(null, null, function(rows){
   UsersManager.setup(rows)
 })
@@ -89,6 +93,117 @@ router.get('/auth/checkAuth',function(req,res){
     res.send({status:false})
   }
 })
+
+
+
+router.post('/admin/send_coins', function(req,res){
+    console.log("in route /Admin/send_coins");
+
+    var numCoins = req.body.coins
+    var adminEmail = req.body.email
+    var adminpassword = req.body.password
+
+    var toManagersAndUsers = req.body.to_all
+    var toManagersOnly = req.body.to_managers
+    var toUserOnly = req.body.to_user
+    var recieverEmail = req.body.reciever_email
+
+    var asyncItemsProccessed = 0;
+
+
+    if(!numCoins){res.json({success:false, error:"Missing Number of Coins field"});}
+    if(!adminEmail){res.json({success:false, error:"Missing Email Field"});}
+    if(!adminpassword){res.json({success:false, error:"Missing Password Field"});}
+    if(!toManagersAndUsers){res.json({success:false, error:"Missing toManagersAndUsersfield"});}
+    if(!toManagersOnly){res.json({success:false, error:"Missing toManagersOnly Field"});}
+    if(!toUserOnly){res.json({success:false, error:"Missing toUserOnly Field"});}
+    if(!numCoins || !adminEmail || !adminpassword || !toManagersAndUsers || !toManagersOnly || !toUserOnly){
+        return;
+    }
+
+    if(adminEmail.toUpperCase() != ADMIN_USERNAME.toUpperCase() && adminpassword != ADMIN_PASSWORD){
+        res.json({success:false, error:"Incorrect Admin Username Password"});
+        return;
+    }
+
+    console.log("toManagersAndUsers: "+toManagersAndUsers);
+    console.log("toManagersOnly: "+toManagersOnly);
+    console.log("toUserOnly: "+toUserOnly);
+
+    if(toManagersAndUsers == 'true'){
+        console.log("toManagersAndUsers");
+
+        dbUtil.getAllUsersForAdmin((err, rows) => {
+            if(err){
+                res.json({success:false, error:err});
+            }else{
+                rows.forEach((row, i) => {
+                    chaincode.invoke.deposit([row.id, numCoins], function(e, data){
+                      asyncItemsProccessed++;
+                      if(e) {res.json({success:false, error:e});}
+                      else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+                      if(asyncItemsProccessed == rows.length){
+                          res.json({success:true, msg:"Sent Coins to Managers And Users"});
+                      }
+                    })
+                })
+            }
+        })
+    }else if(toManagersOnly == 'true'){
+        console.log("toManagersOnly");
+        dbUtil.getAllUsersForAdmin((err, rows) => {
+            if(err){
+                res.json({success:false, error:err});
+            }else{
+                rows.forEach((row, i) => {
+                    console.log(" " + row.id + " ==> " + row.manager);
+                    if(row && row.manager == 1){
+                        chaincode.invoke.deposit([row.id, numCoins], function(e, data){
+                            asyncItemsProccessed++;
+                          if(e) {res.json({success:false, error:e});}
+                          else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+                          if(asyncItemsProccessed == rows.length){
+                              res.json({success:true, msg:"Sent Coins to Managers Only"});
+                          }
+                        })
+                    }else{
+                        asyncItemsProccessed++;
+                    }
+                })
+            }
+        })
+    }else if(toUserOnly == 'true'){
+        console.log("toUserOnly");
+        if(!recieverEmail){
+            res.json({success:false, error:"Missing Reciever Email Field"});
+            return;
+        }
+        dbUtil.getAllUsersForAdmin((err, rows) => {
+            var userFound = false;
+            rows.forEach((row, i) => {
+                if(row.id == recieverEmail){
+                    userFound = true;
+                }
+            })
+
+            if(userFound){
+                chaincode.invoke.deposit([recieverEmail, numCoins], function(e, data){
+                  if(e) {res.json({success:false, error:e});}
+                  else if(!data) {res.json({success:false, error:"User Was Not Found"});}
+                  res.json({success:true, msg:"Sent Coins to User"});
+                })
+            }else{
+                res.json({success:false, error:"User Was Not Found"});
+            }
+        });
+    }else{
+        console.log("All False");
+        res.json({success:false, error:"All Intents Were False"});
+        return;
+    }
+})
+
+
 
 router.get('/slack/signup', ensureAuthenticated, function(req,res){
 
@@ -332,6 +447,8 @@ router.get('/slack/trade-history', function(req, res){
 
     // filter by user
     var data = transactionUtil.getTransactionHistory(req.get("username"))
+    var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
     data.forEach(function(o){
       if(o.type === "set_user"){
@@ -341,6 +458,7 @@ router.get('/slack/trade-history', function(req, res){
     })
     res.status(200)
     res.json(data)
+
 })
 
 // body: username, password, fullname, image_64 (optional)
@@ -396,21 +514,24 @@ router.post('/slack/createAccount', function(req, res){
 // response: JSON
 router.get('/trade-statistics', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
-      var data = transactionUtil.getTransactionHistoryStatistics2();
-      data.forEach( function(obj, i){
+      var data = transactionUtil.getAllTransactionHistory()
+      var data2 = transactionUtil.getAllAllowanceHistory()
+      var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+      var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+      history.forEach( function(obj, i){
           var email = obj[0]
           var jsonObj = obj[1]
           jsonObj.user = UsersManager.getFullname(email);
-          data[i][1] = jsonObj;
+          history[i][1] = jsonObj;
       })
 
       var mapJSON = {}
-      data.forEach( function(obj, i){
+      history.forEach( function(obj, i){
           mapJSON[obj[0]] = obj[1]
       })
 
       res.json({data: mapJSON})
-
   })
 })
 
@@ -462,21 +583,24 @@ router.get('/trade-history', function(req, res){
 // DateTime format is YYYY-MM-DDThh:mm:ss.000Z format ie. 2016-11-28T15:53:52.000Z
 // response: JSON
 router.get('/slack/trade-statistics', function(req, res){
-    var data = transactionUtil.getTransactionHistoryStatistics2();
-    data.forEach( function(obj, i){
+    var data = transactionUtil.getAllTransactionHistory()
+    var data2 = transactionUtil.getAllAllowanceHistory()
+    var filteredHistory = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+
+    var history = transactionUtil.getTransactionHistoryStatistics2(filteredHistory);
+    history.forEach( function(obj, i){
         var email = obj[0]
         var jsonObj = obj[1]
         jsonObj.user = UsersManager.getFullname(email);
-        data[i][1] = jsonObj;
+        history[i][1] = jsonObj;
     })
 
     var mapJSON = {}
-    data.forEach( function(obj, i){
+    history.forEach( function(obj, i){
         mapJSON[obj[0]] = obj[1]
     })
 
     res.json({data: mapJSON})
-
 })
 
 // Product history - gets the products the user purchased

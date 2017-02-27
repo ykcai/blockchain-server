@@ -3,11 +3,74 @@
 html {
     background-color: rgb(31,35,42);
     font-family: 'Roboto', sans-serif;
-    color: white;
+    color: #EEEEEE;
 }
 
 img {
     display: block;
     margin: auto;
-    width: 40%;
  }
+
+ #block_div {
+     margin: auto;
+     width: 50%;
+     border: 2px solid #101216;
+     margin-top: 0.5%;
+     padding: 2%;
+     background-color: #2c313a;
+     text-align:center
+ }
+ /*form {
+     display: block;
+     margin: auto;
+ }*/
+
+#main_heading {
+    text-align: center;
+    margin-top: 2%;
+
+}
+span {
+    font-weight: bold;
+}
+#radio_div {
+    float: left;
+    width: 49%;
+    text-align:left;
+
+    /*border: 3px solid red;*/
+    margin-top: 1%;
+}
+
+#number_input {
+    float: left;
+    margin: auto;
+    width: 49%;
+    /*border: 3px solid red;*/
+}
+
+/*#num_coins {
+    margin: 0;
+position: auto;;
+top: 50%;
+left: 20%;
+}*/
+.center {
+    display: inline-block;
+  margin: 0 auto;
+}
+
+.button {
+    background-color: rgb(76,145,203);
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    display: block;
+    margin: auto;
+}

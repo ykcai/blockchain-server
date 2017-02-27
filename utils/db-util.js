@@ -130,6 +130,14 @@ module.exports.getAllUsers = function(fullname, res, onSuccess){
 }
 
 
+module.exports.getAllUsersForAdmin = function(cb){
+  var query = 'SELECT * FROM users'
+  connection.query(query, function(err, rows){
+      cb(err, rows);
+  })
+}
+
+
 module.exports.update_image = function(username, image_64, res, onSuccess){
 
   var query = "UPDATE users SET image_64 ='" + image_64 + "' WHERE id = '" + username + "'"
