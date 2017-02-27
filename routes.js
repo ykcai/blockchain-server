@@ -458,11 +458,15 @@ router.get('/slack/trade-history', function(req, res){
 
     data.forEach(function(o){
         if(o.type === "set_user"){
+            console.log("o.transaction[1]: " + o.transaction[1]);
+            console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
             allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
             allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
         }
     })
-    allUserFullnames = uniq(allUserFullnames);
+    // allUserFullnames = uniq(allUserFullnames, "fullname");
+    // let uniq = allUserFullnames => [...new Set(allUserFullnames)];
+    // allUserFullnames = uniq;
     //
     // data.forEach(function(o){
     //   if(o.type === "set_user"){
@@ -478,12 +482,15 @@ router.get('/slack/trade-history', function(req, res){
 
 })
 
-var uniq = function(a) {
+var uniq = function(a, key) {
     var seen = {};
     return a.filter(function(item) {
-        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
-    });
+        var k = key(item);
+        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+    })
 }
+
+
 
 // body: username, password, fullname, image_64 (optional)
 // response: JSON
@@ -566,39 +573,50 @@ router.get('/trade-statistics', function(req, res){
 router.get('/trade-history', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
-    // filter by user
-    var data = transactionUtil.getTransactionHistory(req.get("username"))
-    var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
-    var query = req.get("query")
-    if(query){
-      query = query.toLowerCase()
-      var arrContains = function(arr, str){
+      let query = req.get("query");
+      // filter by user
+      console.log("here 1");
+      var data = transactionUtil.getTransactionHistory(req.get("username"))
+      var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+      console.log("here 3");
 
-        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
-        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+      data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+      console.log("here 4");
 
-        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
-        arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
-          return true
-        }
-        return false
-      }
+      var allUserFullnames = [];
+
+      data.forEach(function(o){
+          if(o.type === "set_user"){
+              console.log("o.transaction[1]: " + o.transaction[1]);
+              console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
+              allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
+              allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
+          }
+      })
+      // allUserFullnames = uniq(allUserFullnames, "fullname");
+      // let uniq = allUserFullnames => [...new Set(allUserFullnames)];
+      // allUserFullnames = uniq;
+      //
+      // data.forEach(function(o){
+      //   if(o.type === "set_user"){
+      //     o.sender = UsersManager.getFullname(o.transaction[1])
+      //     o.receiver = UsersManager.getFullname(o.transaction[3])
+      //   }
+      // })
+
+
       data = data.filter(function(o){
         return arrContains(o.transaction, query)
       })
-    }
 
-    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
+      console.log("here 5");
 
-    data.forEach(function(o){
-      if(o.type === "set_user"){
-        o.sender = UsersManager.getFullname(o.transaction[1])
-        o.receiver = UsersManager.getFullname(o.transaction[3])
-      }
-    })
+      res.status(200)
+      res.json({"fullnames":allUserFullnames, "data":data})
 
     res.status(200)
     res.send({data: data})
+
   })
 })
 
