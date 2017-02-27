@@ -121,7 +121,7 @@ router.post('/admin/send_coins', function(req,res){
         return;
     }
 
-    if(adminEmail.toUpperCase() != ADMIN_USERNAME && adminpassword.toUpperCase() != ADMIN_PASSWORD){
+    if(adminEmail.toUpperCase() != ADMIN_USERNAME.toUpperCase() && adminpassword != ADMIN_PASSWORD){
         res.json({success:false, error:"Incorrect Admin Username Password"});
         return;
     }
