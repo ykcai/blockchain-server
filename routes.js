@@ -17,6 +17,7 @@ var multer = require('multer');
 
 const THIS_SERVER = "http://michcai-blockedchain.mybluemix.net";
 const SLACK_SERVER = "http://slackbot-test-server.mybluemix.net";
+const SERVER_DOMAIN = "http://michcai-blockedchain.mybluemix.net";
 
 const ADMIN_USERNAME = "mehranna@ca.ibm.com"
 const ADMIN_PASSWORD = "mehran"
@@ -827,6 +828,9 @@ router.post('/update_image', function(req, res){
                 res.status(200)
                 res.send({success: false, err: err})
             }else{
+                var exposedImgPath = SERVER_DOMAIN + "/uploads/" + username.split('@')[0] + ".jpg"
+                console.log("exposedImgPath: " + exposedImgPath);
+                UsersManager.updateImageInMap(username, exposedImgPath)
                 res.status(200)
                 res.send({success: true, username:username})
             }
