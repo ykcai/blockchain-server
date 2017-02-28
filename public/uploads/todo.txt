@@ -1,0 +1,5 @@
+- Add TAGS const in each file, for better logging
+- chaincode module, routes.js shouldnt directly call any chaincode functions, should do so from an interface
+- make add-product route secure
+- CHANGE IBM BLOCKCHAIN JS TO HFC SDK!!! hopefully that throws errors and isnt a pain to deploy like it is now
+- limit amount of products that can be purchased (limit field in db or Blockchain?)

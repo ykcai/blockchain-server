@@ -12,6 +12,8 @@ var http            = require('http');
 var slackUtil = require('./utils/slack-util')
 var ibc
 var chaincode
+var fs = require('fs');
+var multer = require('multer');
 
 const THIS_SERVER = "http://michcai-blockedchain.mybluemix.net";
 const SLACK_SERVER = "http://slackbot-test-server.mybluemix.net";
@@ -458,15 +460,15 @@ router.get('/slack/trade-history', function(req, res){
 
     data.forEach(function(o){
         if(o.type === "set_user"){
-            console.log("o.transaction[1]: " + o.transaction[1]);
-            console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
+            // console.log("o.transaction[1]: " + o.transaction[1]);
+            // console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
             allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
             allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
         }
     })
-    // allUserFullnames = uniq(allUserFullnames, "fullname");
-    // let uniq = allUserFullnames => [...new Set(allUserFullnames)];
-    // allUserFullnames = uniq;
+    allUserFullnames = uniq(allUserFullnames, "fullname");
+    let uniq = allUserFullnames => [...new Set(allUserFullnames)];
+    allUserFullnames = uniq;
     //
     // data.forEach(function(o){
     //   if(o.type === "set_user"){
@@ -481,6 +483,26 @@ router.get('/slack/trade-history', function(req, res){
 
 
 })
+
+var upload = multer({ dest: '/tmp/'});
+
+// File input field name is simply 'file'
+router.post('/file_upload', upload.single('file'), function(req, res) {
+  var file = __dirname + '/public/uploads/' + req.file.filename;
+  fs.rename(req.file.path, file, function(err) {
+    if (err) {
+      console.log(err);
+      res.send(500);
+    } else {
+      res.json({
+        message: 'File uploaded successfully',
+        filename: req.file.filename
+      });
+    }
+  });
+});
+
+
 
 var uniq = function(a, key) {
     var seen = {};
@@ -573,50 +595,39 @@ router.get('/trade-statistics', function(req, res){
 router.get('/trade-history', function(req, res){
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg,function(){
 
-      let query = req.get("query");
-      // filter by user
-      console.log("here 1");
-      var data = transactionUtil.getTransactionHistory(req.get("username"))
-      var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
-      console.log("here 3");
+    // filter by user
+    var data = transactionUtil.getTransactionHistory(req.get("username"))
+    var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
+    var query = req.get("query")
+    if(query){
+      query = query.toLowerCase()
+      var arrContains = function(arr, str){
 
-      data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
-      console.log("here 4");
+        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
+        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
 
-      var allUserFullnames = [];
-
-      data.forEach(function(o){
-          if(o.type === "set_user"){
-              console.log("o.transaction[1]: " + o.transaction[1]);
-              console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
-              allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
-              allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
-          }
-      })
-      // allUserFullnames = uniq(allUserFullnames, "fullname");
-      // let uniq = allUserFullnames => [...new Set(allUserFullnames)];
-      // allUserFullnames = uniq;
-      //
-      // data.forEach(function(o){
-      //   if(o.type === "set_user"){
-      //     o.sender = UsersManager.getFullname(o.transaction[1])
-      //     o.receiver = UsersManager.getFullname(o.transaction[3])
-      //   }
-      // })
-
-
+        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
+        arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+          return true
+        }
+        return false
+      }
       data = data.filter(function(o){
         return arrContains(o.transaction, query)
       })
+    }
 
-      console.log("here 5");
+    data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
 
-      res.status(200)
-      res.json({"fullnames":allUserFullnames, "data":data})
+    data.forEach(function(o){
+      if(o.type === "set_user"){
+        o.sender = UsersManager.getFullname(o.transaction[1])
+        o.receiver = UsersManager.getFullname(o.transaction[3])
+      }
+    })
 
     res.status(200)
     res.send({data: data})
-
   })
 })
 
@@ -793,13 +804,12 @@ router.get('/createAccount', function(req, res){
 // body: username, image_64
 // response: JSON
 router.post('/update_image', function(req, res){
+    var username = req.body.username
+    var image_64 = req.body.image_64
 
-  var username = req.body.username
-  var image_64 = req.body.image_64
-
-  if(!username){sendErrorMsg("Missing username", res)}
-  if(!image_64){sendErrorMsg("Missing image_64", res)}
-  if(!username || !image_64){return}
+    if(!username){sendErrorMsg("Missing username", res)}
+    if(!image_64){sendErrorMsg("Missing image_64", res)}
+    if(!username || !image_64){return}
 
   chaincode.query.read([username], function(e, data){
     if(e){
@@ -811,13 +821,30 @@ router.post('/update_image', function(req, res){
       return
     }
 
-    dbUtil.update_image(username, image_64, res, function(rows){
-      UsersManager.updateImageInMap(username, image_64);
-      res.status(200)
-      res.send({success: 'TRUE', image_64:image_64, username:username})
+    var matches = image_64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    var response = {};
+    var ImageWritePath = __dirname + "/public/uploads/" + username.split('@')[0] + ".jpg"
+    console.log("ImageWritePath: " + ImageWritePath);
+
+    if (matches.length !== 3) {
+        res.send({success: false, err: "Invalid input string"})
+    }else{
+        response.type = matches[1];
+        response.data = new Buffer(matches[2], 'base64');
+        fs.writeFile(ImageWritePath, response.data, function(err) {
+            console.log("err:" + err)
+            if (err){
+                res.status(200)
+                res.send({success: false, err: err})
+            }else{
+                res.status(200)
+                res.send({success: true, username:username})
+            }
+        });
+    }
     })
-  })
 })
+
 
 // headers: token
 // body: username
