@@ -234,7 +234,7 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
 })
 
 router.get('/auth/user',function(req,res){
-  var username = req.user.emailaddress
+  var username = req.user.emailaddress;
   chaincode.query.read([username], function(e, data){
     if(e){
       sendErrorMsg("Blockchain error", res)
@@ -246,10 +246,16 @@ router.get('/auth/user',function(req,res){
     }
 
     var token = UsersManager.createToken(username)
-
+    var fullname = UsersManager.getFullname(username);
+    var imageURL = SERVER_DOMAIN + "/uploads/" + username.split('@')[0] + ".jpg"
     dbUtil.getUser(username, res, function(rows){
-      res.status(200)
-      res.send({token: token, fullname: rows[0].fullname, image_64: rows[0].image_64,username:username, isManager: rows[0].manager})
+        var image_exists = doesURLexists(imageURL, (exists) => {
+            console.log("exists: " + exists);
+            if(exists){fullname.image_64 = imageURL}
+            res.status(200)
+            res.send({token: token, fullname: fullname, image_exists:exists, username:username, isManager: rows[0].manager})
+        });
+
     })
   })
 })
@@ -266,6 +272,18 @@ function ensureAuthenticated(req, res, next) {
   }
 }
 
+function doesURLexists(Url, callback) {
+        var url = require('url');
+        var options = {
+            method: 'HEAD',
+            host: url.parse(Url).host,
+            port: 80,
+            path: url.parse(Url).pathname
+        };
+        var req = http.request(options, function (r) {
+            callback( r.statusCode == 200);});
+        req.end();
+}
 // --- END AUTHENTICATION ---- //
 
 // Script to allocate allowance to users based on db every X seconds
