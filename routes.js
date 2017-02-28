@@ -253,7 +253,7 @@ router.get('/auth/user',function(req,res){
             console.log("exists: " + exists);
             if(exists){fullname.image_64 = imageURL}
             res.status(200)
-            res.send({token: token, fullname: fullname, image_exists:exists, username:username, isManager: rows[0].manager})
+            res.send({token: token, fullname: fullname.fullname, image_64:fullname.image_64, image_exists:exists, username:username, isManager: rows[0].manager})
         });
 
     })
