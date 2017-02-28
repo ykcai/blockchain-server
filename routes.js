@@ -446,42 +446,39 @@ Also sorted by timestamp.
 Last one in the array is the latest transaction
 */
 router.get('/slack/trade-history', function(req, res){
-
     // filter by user
-    console.log("here 1");
     var data = transactionUtil.getTransactionHistory(req.get("username"))
     var data2 = transactionUtil.getAllowanceHistory(req.get("username"))
-    console.log("here 3");
+    var query = req.get("query")
+    if(query){
+      query = query.toLowerCase()
+      var arrContains = function(arr, str){
+
+        var sendName = UsersManager.getFullname(arr[1]).fullname.toLowerCase()
+        var recName = UsersManager.getFullname(arr[3]).fullname.toLowerCase()
+
+        if(sendName.substr(0, str.length) === str || recName.substr(0, str.length) === str ||
+        arr[1].substr(0, str.length) === str || arr[3].substr(0, str.length) === str){
+          return true
+        }
+        return false
+      }
+      data = data.filter(function(o){
+        return arrContains(o.transaction, query)
+      })
+    }
 
     data = filterByDates(data.concat(data2), req.get("startDateTime"), req.get("endDateTime"))
-    console.log("here 4");
-
-    var allUserFullnames = [];
 
     data.forEach(function(o){
-        if(o.type === "set_user"){
-            // console.log("o.transaction[1]: " + o.transaction[1]);
-            // console.log("o.transaction[3]: " + JSON.stringify(UsersManager.getFullname(o.transaction[3])));
-            allUserFullnames.push(UsersManager.getFullname(o.transaction[1]));
-            allUserFullnames.push(UsersManager.getFullname(o.transaction[3]));
-        }
+      if(o.type === "set_user"){
+        o.sender = UsersManager.getFullname(o.transaction[1])
+        o.receiver = UsersManager.getFullname(o.transaction[3])
+      }
     })
-    allUserFullnames = uniq(allUserFullnames, "fullname");
-    let uniq = allUserFullnames => [...new Set(allUserFullnames)];
-    allUserFullnames = uniq;
-    //
-    // data.forEach(function(o){
-    //   if(o.type === "set_user"){
-    //     o.sender = UsersManager.getFullname(o.transaction[1])
-    //     o.receiver = UsersManager.getFullname(o.transaction[3])
-    //   }
-    // })
-    console.log("here 5");
 
     res.status(200)
-    res.json({"fullnames":allUserFullnames, "data":data})
-
-
+    res.send({data: data})
 })
 
 var upload = multer({ dest: '/tmp/'});
@@ -820,17 +817,10 @@ router.post('/update_image', function(req, res){
       sendErrorMsg("User does not exists", res)
       return
     }
-
-    var matches = image_64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    console.log("username: " + username);
     var response = {};
     var ImageWritePath = __dirname + "/public/uploads/" + username.split('@')[0] + ".jpg"
-    console.log("ImageWritePath: " + ImageWritePath);
-
-    if (matches.length !== 3) {
-        res.send({success: false, err: "Invalid input string"})
-    }else{
-        response.type = matches[1];
-        response.data = new Buffer(matches[2], 'base64');
+        response.data = new Buffer(image_64, 'base64');
         fs.writeFile(ImageWritePath, response.data, function(err) {
             console.log("err:" + err)
             if (err){
@@ -841,10 +831,8 @@ router.post('/update_image', function(req, res){
                 res.send({success: true, username:username})
             }
         });
-    }
     })
 })
-
 
 // headers: token
 // body: username
