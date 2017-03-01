@@ -565,6 +565,7 @@ router.post('/slack/createAccount', function(req, res){
       }
       else{
 
+
         dbUtil.addUser(username, fullname, image_64, res)
         UsersManager.addFullname(username, fullname, image_64)
         res.status(200)
