@@ -57,8 +57,11 @@ module.exports.checkUserTokenPair = function(username, t, res, err, callback){
 // creates user and return token
 module.exports.createToken = function(username){
   // logged into new device, delete old token, make new one
+  console.log(" CreateToken Method for :" + username   );
+  console.log(" loggedInUsers["+username+"]: " + loggedInUsers[username]   );
+
   if(username in loggedInUsers){
-    console.log("Replacing old token with new one")
+    console.log("Replacing old token with new one for username: "  +username)
     oldTokens[loggedInUsers[username]] = username
   }
 
@@ -69,6 +72,7 @@ module.exports.createToken = function(username){
 }
 
 module.exports.logout = function(username, token, res, err, callback){
+    console.log("logging out user: " + username + " with token " + token);
   if(username in loggedInUsers){
     if(loggedInUsers[username] === token){
       delete loggedInUsers[username]
