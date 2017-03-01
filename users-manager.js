@@ -34,6 +34,7 @@ module.exports.getFullname = function(username){
 
 // checks for valid username & token too
 module.exports.checkUserTokenPair = function(username, t, res, err, callback){
+  console.log("USERMANGER checkUserTokenPair: ", username, t)
   if(!t){
     err("Token param not found", res)
   }
