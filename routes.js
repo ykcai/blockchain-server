@@ -836,12 +836,10 @@ router.post('/update_image', function(req, res){
       sendErrorMsg("User does not exists", res)
       return
     }
-    console.log("username: " + username);
     var response = {};
     var ImageWritePath = __dirname + "/public/uploads/" + username.split('@')[0] + ".jpg"
         response.data = new Buffer(image_64, 'base64');
         fs.writeFile(ImageWritePath, response.data, function(err) {
-            console.log("err:" + err)
             if (err){
                 res.status(200)
                 res.send({success: false, err: err})
