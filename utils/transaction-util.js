@@ -30,11 +30,6 @@ module.exports.getProductHistory = function(username){
   })
 }
 
-
-
-
-
-
 var addHoursFromExistingFields = function(jsonValue, transaction){
     if(!jsonValue.hours){
         jsonValue.hours = 0;
@@ -46,7 +41,6 @@ var addHoursFromExistingFields = function(jsonValue, transaction){
     }
     return jsonValue;
 }
-
 
 module.exports.getTransactionHistoryStatistics2 = function(transHistory) {
     //2D Arr
@@ -121,9 +115,6 @@ module.exports.getTransactionHistoryStatistics2 = function(transHistory) {
     return arr;
 }
 
-
-
-
 module.exports.getTransactionHistoryStatistics = function() {
   let myMap = new Map();
   var jsonValue = {};
@@ -142,7 +133,6 @@ module.exports.getTransactionHistoryStatistics = function() {
       }
       myMap.set(obj.transaction[1], jsonValue);
   });
-
 
   //sets reciever points
   transactionHistory.forEach(function(obj) {
@@ -167,8 +157,6 @@ module.exports.addTransaction = function(transaction, callback){
 
   if(str.indexOf("set_user") > -1){
     blockObj.transaction = formatPayload(str.substr(str.indexOf("set_user")))
-    console.log("blockObj.transaction: " + JSON.stringify(blockObj.transaction, null, 4));
-
     blockObj.type = "set_user"
     transactionHistory.push(blockObj)
     callback(blockObj)
@@ -197,8 +185,6 @@ module.exports.addTransaction = function(transaction, callback){
   }
 }
 
-
-
 var formatPayload = function(str){
   return str.replace(/[^\x0A|\x20|\x2D-\x7F]/g, "").split("\n")
 }
@@ -216,16 +202,10 @@ var getIfEmailExists = function(arr, email){
     var returnValue = false;
 
     arr.forEach(function(ObjArr, i) {
-        // console.log("ObjArr: " + JSON.stringify(ObjArr));
-
-        // console.log("does " + ObjArr[0] + " == " + email  + "  ==> " + ((ObjArr[0] == email)) );
         if(ObjArr[0] == email){
-            // console.log("returning true now");
             returnValue = true;
         }
     })
-
-    // console.log("returning false now");
     return returnValue;
 }
 

@@ -29,7 +29,6 @@ module.exports.addFullname = function(username, fullname, image_64){
 }
 
 module.exports.getFullname = function(username){
-    // console.log("6 " + username + " ===>>>> " + JSON.stringify(usernameFullnameMap[username]));
   return usernameFullnameMap[username]
 }
 
@@ -42,9 +41,11 @@ module.exports.checkUserTokenPair = function(username, t, res, err, callback){
     err("Username param not found", res)
   }
   else if(loggedInUsers[username] != t && oldTokens[t] != username){
+    console.log("USERMANGER INVALID Token Pair: ", loggedInUsers[username], oldTokens[t], username)
     err("Invalid username token pair", res)
   }
   else if(loggedInUsers[username] != t && oldTokens[t] === username){
+    console.log("USERMANGER OLD Token: ", loggedInUsers[username], oldTokens[t], username)
     err("Old token detected, login again", res)
   }
   else{
