@@ -377,15 +377,11 @@ router.get('/ui/tip-reasons', function(req, res){
 // response: JSON
 router.get('/user', function(req, res){
 
-    if(!req.get("username")){
-        sendErrorMsg("missing username error ", res)
-        return;
-    }
+    if(!req.get("username")){sendErrorMsg("missing username error ", res)}
+    if(!req.get("token")){sendErrorMsg("missing token error ", res)}
+    if(!req.get("username") || !req.get("token")){return;}
 
-    console.log("1 in /user Route with username: " + req.get("username") + "and token " + req.get("token"));
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg, function(){
-      console.log("2 in /user Route finished checkusertoken : " + req.get("username") );
-
     chaincode.query.read([req.get("username")], function(e, data){
       if(e){
         sendErrorMsg("Blockchain Error " + e, res)
@@ -404,6 +400,11 @@ router.get('/user', function(req, res){
 // headers: username, token
 // response: JSON
 router.get('/slack/user', function(req, res){
+    if(!req.get("username")){
+        sendErrorMsg("missing username error ", res);
+        return;
+    }
+
   console.log("req.get('username'): " + req.get("username"));
   chaincode.query.read([req.get("username")], function(e, data){
     if(e){

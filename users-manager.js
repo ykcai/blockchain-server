@@ -34,7 +34,6 @@ module.exports.getFullname = function(username){
 
 // checks for valid username & token too
 module.exports.checkUserTokenPair = function(username, t, res, err, callback){
-  console.log("USERMANGER checkUserTokenPair: ", username, t)
   if(!t){
     err("Token param not found", res)
   }
@@ -42,11 +41,9 @@ module.exports.checkUserTokenPair = function(username, t, res, err, callback){
     err("Username param not found", res)
   }
   else if(loggedInUsers[username] != t && oldTokens[t] != username){
-    console.log("USERMANGER INVALID Token Pair: ", loggedInUsers[username], oldTokens[t], username)
     err("Invalid username token pair", res)
   }
   else if(loggedInUsers[username] != t && oldTokens[t] === username){
-    console.log("USERMANGER OLD Token: ", loggedInUsers[username], oldTokens[t], username)
     err("Old token detected, login again", res)
   }
   else{
@@ -57,9 +54,6 @@ module.exports.checkUserTokenPair = function(username, t, res, err, callback){
 // creates user and return token
 module.exports.createToken = function(username){
   // logged into new device, delete old token, make new one
-  console.log(" CreateToken Method for :" + username   );
-  console.log(" loggedInUsers["+username+"]: " + loggedInUsers[username]   );
-
   if(username in loggedInUsers){
     console.log("Replacing old token with new one for username: "  +username)
     oldTokens[loggedInUsers[username]] = username
