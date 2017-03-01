@@ -564,13 +564,12 @@ router.post('/slack/createAccount', function(req, res){
         sendErrorMsg("Error - Data not found for some reason?", res)
       }
       else{
-        var token = UsersManager.createToken(username)
-        data.token = token
+
 
         dbUtil.addUser(username, fullname, image_64, res)
         UsersManager.addFullname(username, fullname, image_64)
         res.status(200)
-        res.send({token:token,fullname:fullname,image_64:image_64,username:username,isManager:false})
+        res.send({fullname:fullname,image_64:image_64,username:username})
       }
     })
 
@@ -689,7 +688,10 @@ router.get('/product-history', function(req, res){
 
 var trade = function(senderId, amount, receiverId, reason, hours, client, res){
 
+    console.log("here 1 : users" + UsersManager.getLoggedInUsers()[senderId]);
   chaincode.query.read([senderId], function(e, data){
+      console.log("here 2 : users" + UsersManager.getLoggedInUsers()[senderId]);
+
     if(e){
       sendErrorMsg("Blockchain Error " + e, res)
       return
@@ -698,6 +700,7 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
       sendErrorMsg("Error - Sender user doesnt exist", res)
       return
     }
+    console.log("here 3 : users" + UsersManager.getLoggedInUsers()[senderId]);
 
     data = JSON.parse(data);
 
@@ -707,6 +710,7 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
       //so manually check and throw one ourselves
       return
     }
+    console.log("here 4 : users" + UsersManager.getLoggedInUsers()[senderId]);
 
     if(senderId == receiverId) {
       sendErrorMsg("Error - invalid receiverId", res)
@@ -714,6 +718,8 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
     }
 
     chaincode.query.read([receiverId], function(e, data){
+        console.log("here 5 : users" + UsersManager.getLoggedInUsers()[senderId]);
+
       if(e){
         sendErrorMsg("Blockchain Error " + e, res)
         return
@@ -722,6 +728,8 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
         sendErrorMsg("Error - Receiver user doesnt exist", res)
         return
       }
+
+      console.log("here 6 : users" + UsersManager.getLoggedInUsers()[senderId]);
 
       chaincode.invoke.set_user([senderId, amount, receiverId, reason, hours], function(e, data){
         if(e){
@@ -732,6 +740,8 @@ var trade = function(senderId, amount, receiverId, reason, hours, client, res){
           sendErrorMsg("Error - Data not found for some reason?", res)
         }
         else{
+            console.log("here 7 : users" + UsersManager.getLoggedInUsers()[senderId]);
+
           slackUtil.sendTradeNotificationToSlack(res, senderId, receiverId, amount, reason, client, function(res, err, result, body){
             res.status(200)
             res.send(data)

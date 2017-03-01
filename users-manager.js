@@ -87,6 +87,10 @@ module.exports.getToken = function(username){
   return loggedInUsers[username]
 }
 
+module.exports.getLoggedInUsers = function(){
+  return loggedInUsers;
+}
+
 module.exports.hashPassword = function(password){
   return bcrypt.hashSync(password, salt)
 }
