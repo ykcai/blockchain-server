@@ -376,6 +376,12 @@ router.get('/ui/tip-reasons', function(req, res){
 // headers: username, token
 // response: JSON
 router.get('/user', function(req, res){
+
+    if(!req.get("username")){
+        sendErrorMsg("missing username error ", res)
+        return;
+    }
+
     console.log("1 in /user Route with username: " + req.get("username") + "and token " + req.get("token"));
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg, function(){
       console.log("2 in /user Route finished checkusertoken : " + req.get("username") );
