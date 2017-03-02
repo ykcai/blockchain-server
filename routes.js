@@ -215,7 +215,7 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
     var msg = null;
     body = (body) ? JSON.parse(body) : null;
 
-    if(body && body.token && body.fullname){
+    if(body && body.fullname){
       console.log("successfully created a new account");
       msg = "SUCCESSFULLY_AUTHENTICATED"
       res.redirect('http://slackbot-test-server.mybluemix.net/');
