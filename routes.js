@@ -215,7 +215,7 @@ router.get('/slack/signup', ensureAuthenticated, function(req,res){
     var msg = null;
     body = (body) ? JSON.parse(body) : null;
 
-    if(body && body.token && body.fullname){
+    if(body && body.fullname){
       console.log("successfully created a new account");
       msg = "SUCCESSFULLY_AUTHENTICATED"
       res.redirect('http://slackbot-test-server.mybluemix.net/');
@@ -376,6 +376,11 @@ router.get('/ui/tip-reasons', function(req, res){
 // headers: username, token
 // response: JSON
 router.get('/user', function(req, res){
+
+    if(!req.get("username")){sendErrorMsg("missing username error ", res)}
+    if(!req.get("token")){sendErrorMsg("missing token error ", res)}
+    if(!req.get("username") || !req.get("token")){return;}
+
   UsersManager.checkUserTokenPair(req.get("username"), req.get("token"), res, sendErrorMsg, function(){
     chaincode.query.read([req.get("username")], function(e, data){
       if(e){
@@ -395,6 +400,11 @@ router.get('/user', function(req, res){
 // headers: username, token
 // response: JSON
 router.get('/slack/user', function(req, res){
+    if(!req.get("username")){
+        sendErrorMsg("missing username error ", res);
+        return;
+    }
+
   console.log("req.get('username'): " + req.get("username"));
   chaincode.query.read([req.get("username")], function(e, data){
     if(e){
