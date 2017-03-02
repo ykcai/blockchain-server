@@ -773,9 +773,8 @@ router.post('/trade', function(req, res){
   var amount = req.body.amount
   var reason = req.body.reason
   var hours = req.body.hours
-  if(!hours){
-      hours = 0;
-  }
+  var token = req.get("token")
+  if(!hours){hours = 0;}
 
   var client = null;
   if(req.body.client) {client = req.body.client}
@@ -786,8 +785,8 @@ router.post('/trade', function(req, res){
   if(!amount){sendErrorMsg("Missing amount", res)}
   if(!reason){sendErrorMsg("Missing reason", res)}
   if(!senderId || !receiverId || !amount || !reason){return}
-
-  UsersManager.checkUserTokenPair(senderId, req.get("token"), res, sendErrorMsg, function(){
+  console.log("TRADING COINS: FROM " + senderId + token + "TO: " + receiverId)
+  UsersManager.checkUserTokenPair(senderId, token, res, sendErrorMsg, function(){
     trade(senderId, amount, receiverId, reason, hours, 'APP', res);
   })
 
