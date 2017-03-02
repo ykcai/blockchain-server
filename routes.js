@@ -456,7 +456,7 @@ router.post('/slack/trade', function(req, res){
   var receiverId = req.body.receiverId
   var amount = req.body.amount
   var reason = req.body.reason
-  var hours = req.body.hours
+  var hours = 0;
 
   var client = null;
   if(req.body.client) {client = req.body.client}
@@ -773,6 +773,9 @@ router.post('/trade', function(req, res){
   var amount = req.body.amount
   var reason = req.body.reason
   var hours = req.body.hours
+  if(!hours){
+      hours = 0;
+  }
 
   var client = null;
   if(req.body.client) {client = req.body.client}
