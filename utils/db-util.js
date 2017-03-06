@@ -156,6 +156,17 @@ module.exports.update_image = function(username, image_64, res, onSuccess){
   })
 }
 
+
+module.exports.update_image_avail = function(username, available, cb){
+
+  var query = "UPDATE users SET image_avail ='" + available + "' WHERE id = '" + username + "'"
+
+  connection.query(query, function(err, rows){
+      cb(err, rows);
+  })
+}
+
+
 module.exports.submitFeedback = function (username,feedback,starCount,cb) {
   var query = 'INSERT INTO feedback (user_id,feedback,rating) values ("'+username+'", "'+feedback+'", "'+starCount+'")'
 

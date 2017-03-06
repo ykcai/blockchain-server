@@ -869,8 +869,10 @@ router.post('/update_image', function(req, res){
                 var exposedImgPath = SERVER_DOMAIN + "/uploads/" + username.split('@')[0] + ".jpg"
                 console.log("exposedImgPath: " + exposedImgPath);
                 UsersManager.updateImageInMap(username, exposedImgPath)
-                res.status(200)
-                res.send({success: true, username:username})
+                dbUtil.update_image_avail(username, 1, (err, rows) => {
+                    res.status(200)
+                    res.send({success: true, username:username})
+                })
             }
         });
     })
