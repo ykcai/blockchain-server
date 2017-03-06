@@ -68,11 +68,11 @@ module.exports.buyProduct = function(UUID, res){
   })
 }
 
-module.exports.addUser = function(username, fullname, image_64, res){
+module.exports.addUser = function(username, fullname, image_avail, res){
   var query
-  if(image_64){
-    query = 'INSERT INTO users (id, fullname, image_64) VALUES ("' +
-            username + '" , "' + fullname + '" , "' + image_64 + '")'
+  if(image_avail){
+    query = 'INSERT INTO users (id, fullname, image_avail) VALUES ("' +
+            username + '" , "' + fullname + '" , "' + image_avail + '")'
   }
   else{
     query = 'INSERT INTO users (id, fullname) VALUES ("' +
@@ -158,9 +158,7 @@ module.exports.update_image = function(username, image_64, res, onSuccess){
 
 
 module.exports.update_image_avail = function(username, available, cb){
-
   var query = "UPDATE users SET image_avail ='" + available + "' WHERE id = '" + username + "'"
-
   connection.query(query, function(err, rows){
       cb(err, rows);
   })

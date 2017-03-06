@@ -797,7 +797,7 @@ router.post('/trade', function(req, res){
 router.get('/createAccount', function(req, res){
   var username = req.user.emailaddress
   var fullname = req.user.cn
-  var image_64 = ''
+  var image_avail = 0
 
   if(!username || !fullname){
     sendErrorMsg("Missing data", res)
@@ -828,11 +828,11 @@ router.get('/createAccount', function(req, res){
         var token = UsersManager.createToken(username)
         data.token = token
 
-        dbUtil.addUser(username, fullname, image_64, res)
-        UsersManager.addFullname(username, fullname, image_64)
+        dbUtil.addUser(username, fullname, image_avail, res)
+        UsersManager.addFullname(username, fullname, "")
 
         res.status(200)
-        res.send({token:token,fullname:fullname,image_64:image_64,username:username})
+        res.send({token:token,fullname:fullname,image_64:"",username:username})
       }
     })
 
