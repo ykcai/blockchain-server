@@ -574,8 +574,6 @@ router.post('/slack/createAccount', function(req, res){
         sendErrorMsg("Error - Data not found for some reason?", res)
       }
       else{
-
-
         dbUtil.addUser(username, fullname, 0, res)
         UsersManager.addFullname(username, fullname, image_64)
         res.status(200)
